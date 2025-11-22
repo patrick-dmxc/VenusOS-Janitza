@@ -1,7 +1,7 @@
 # VenusOS module for support of Janitza UMG 96 RM-E Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
-# Version 0.2 - 2025-11-22
+# Version 0.4 - 2025-11-22
 # - Add PowerFactor for L1, L2 and L3
 # - Add Line to Line Voltage
 # Version 0.2 - 2024-01-18
