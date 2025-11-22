@@ -1,6 +1,9 @@
 # VenusOS module for support of Janitza UMG 96 RM-E Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
+# Version 0.2 - 2025-11-22
+# - Add PowerFactor for L1, L2 and L3
+# - Add Line to Line Voltage
 # Version 0.2 - 2024-01-18
 # - Switched Identifyer to ProductNumber
 # - Added other Models
@@ -58,11 +61,13 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
         pRegs = None
         try:
             pRegs = [
-                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,        1, '%.3f V'),
-                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,        1, '%.3f A'),
-                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,          1, '%.3f W'),
+                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
                 Reg_f32b(19062 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
                 Reg_f32b(19068 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(19044 + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
             log.info('Janitza register Phase %d exception while Register f32'% n)
