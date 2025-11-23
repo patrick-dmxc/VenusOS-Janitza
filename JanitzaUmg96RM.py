@@ -1,6 +1,8 @@
-# VenusOS module for support of Janitza UMG 96 RM-E Analyzer - and maybe others
+# VenusOS module for support of Janitza UMG 96 Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
+# Version 0.5 - 2025-11-23
+# - Add PowerFactor for Sum of L1, L2 and L3
 # Version 0.4 - 2025-11-22
 # - Add PowerFactor for L1, L2 and L3
 # - Add Line to Line Voltage
@@ -67,7 +69,7 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
                 Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
                 Reg_f32b(19062 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
                 Reg_f32b(19068 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
-                Reg_f32b(19044 + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
+                Reg_f32b(828   + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
             log.info('Janitza register Phase %d exception while Register f32'% n)
@@ -83,11 +85,12 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
         gRegs = None
         try:
             gRegs = [
-                Reg_f32b(19026, '/Ac/Power',          1, '%.3f W'),
-                Reg_f32b(19018, '/Ac/Current',        1, '%.3f A'),
-                Reg_f32b(19050, '/Ac/Frequency',      1, '%.3f Hz'),
+                Reg_f32b(19026, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(19018, '/Ac/Current',           1, '%.3f A'),
+                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
                 Reg_f32b(19068, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
                 Reg_f32b(19076, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+                Reg_f32b(834  , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
             log.info('Janitza device exception while Register f32')
@@ -132,11 +135,13 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
         pRegs = None
         try:
             pRegs = [
-                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,        1, '%.3f V'),
-                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,        1, '%.3f A'),
-                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,          1, '%.3f W'),
+                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
                 Reg_f32b(19062 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
                 Reg_f32b(19068 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(1294   + s, '/Ac/L%d/PowerFactor' % n,      1, '%.3f'),
             ]
         except:
             log.info('Janitza register Phase %d exception while Register f32'% n)
@@ -152,11 +157,12 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
         gRegs = None
         try:
             gRegs = [
-                Reg_f32b(19026, '/Ac/Power',          1, '%.3f W'),
-                Reg_f32b(19018, '/Ac/Current',        1, '%.3f A'),
-                Reg_f32b(19050, '/Ac/Frequency',      1, '%.3f Hz'),
+                Reg_f32b(19026, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(19018, '/Ac/Current',           1, '%.3f A'),
+                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
                 Reg_f32b(19068, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
                 Reg_f32b(19076, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+                Reg_f32b(1300 , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
             log.info('Janitza device exception while Register f32')
