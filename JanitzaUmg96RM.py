@@ -1,5 +1,5 @@
 # VenusOS module for support of Janitza UMG 96 Analyzer - and maybe others
-# 
+#
 # Community contribution by Patrick Grote
 # Version 0.5 - 2025-11-23
 # - Add PowerFactor for Sum of L1, L2 and L3
@@ -20,7 +20,7 @@ import probe
 from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_num
 
 log = logging.getLogger()
-        
+
 #class Reg_f32b(Reg_num): # Works in 3.10
 #    def __init__(self, base, *args, **kwargs):
 #        super(Reg_f32b, self).__init__(base, 2, *args, **kwargs)
@@ -116,7 +116,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
 
 
     def __init__(self, *args):
-        super(JANITZA_UMG_96RM, self).__init__(*args)
+        super(JANITZA_UMG_96PQ, self).__init__(*args)
         log.info('Janitza Probing')
         try:
             self.info_regs = [
@@ -177,6 +177,81 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
 
     def get_ident(self):
         return 'cg_%s' % self.info['/Serial']
+
+
+class JANITZA_UMG_503(device.EnergyMeter):
+    productid = 0xFFFF
+    productname = 'Janitza UMG 503'
+    min_timeout = 0.5
+    age_limit_fast = 0
+    refresh_time = 200
+    nr_phases = 3
+
+
+    def __init__(self, *args):
+        super(JANITZA_UMG_503, self).__init__(*args)
+        log.info('Janitza Probing')
+        try:
+            self.info_regs = [
+                Reg_u16(20037, '/HardwareVersion'),
+                Reg_u16(20009, '/FirmwareVersion'),
+                Reg_u32b(911, '/Serial'),
+            ]
+        except:
+            log.info('Exception while Janitza Probing')
+        log.info('Janitza Probing done')
+
+    def phase_regs(self, n):
+        log.info('Janitza register Phase %d' % n)
+        s = 0x0002 * (n - 1)
+
+        pRegs = None
+        try:
+            pRegs = [
+                Reg_f32b(1012 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(1024 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(1000 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(1036 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(1084 + s, '/Ac/L%d/Frequency',            1, '%.3f Hz'),
+                # Reg_f32b(#### + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
+                # Reg_f32b(#### + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(1294   + s, '/Ac/L%d/PowerFactor' % n,      1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza register Phase %d exception while Register f32'% n)
+        log.info('Janitza register Phase %d done'% n)
+        return pRegs
+
+
+    def device_init(self):
+        log.info('Janitza device init')
+        self.read_info()
+
+        phases = 3
+        gRegs = None
+        try:
+            gRegs = [
+                Reg_f32b(1096, '/Ac/Power',             1, '%.3f W'),
+                # Reg_f32b(####, '/Ac/Current',           1, '%.3f A'),
+                # Reg_f32b(####, '/Ac/Frequency',         1, '%.3f Hz'),
+                Reg_f32b(2000, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
+                Reg_f32b(2030, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+                Reg_f32b(1108 , '/Ac/PowerFactor',       1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza device exception while Register f32')
+
+
+        for n in range(1, phases + 1):
+            gRegs += self.phase_regs(n)
+
+        log.info('Janitza set Registers')
+        self.data_regs = gRegs
+        log.info('Janitza device init done')
+
+    def get_ident(self):
+        return 'cg_%s' % self.info['/Serial']
+
 
 models96RM = {
     5222036: {
@@ -245,11 +320,18 @@ models96RM = {
     },
 }
 
-models96PQ = {    
+models96PQ = {
     45030080: {
         'model':    'UMG 96 PQ-L',
         'handler':  JANITZA_UMG_96PQ,
-    },
+    }
+}
+
+model503 = {
+    _IDENTIFYER_VALUE_: {
+        'model':    'UMG 503',
+        'handler':  JANITZA_UMG_503,
+    }
 }
 
 probe.add_handler(probe.ModelRegister(Reg_s32b(769), models96RM,
@@ -258,6 +340,12 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(769), models96RM,
                                       units=[1]))
 
 probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
+                                      methods=['rtu','tcp'],
+                                      rates=[115200],
+                                      units=[1]))
+
+# I need an MODBUS-ADDRESS as Identifyer
+probe.add_handler(probe.ModelRegister(Reg_s32b(_ADDRESS_FOR_IDENTIFY_), model503,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
