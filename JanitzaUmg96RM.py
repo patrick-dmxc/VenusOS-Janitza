@@ -327,7 +327,7 @@ models96PQ = {
     }
 }
 
-model503 = {
+models503 = {
     _IDENTIFYER_VALUE_: {
         'model':    'UMG 503',
         'handler':  JANITZA_UMG_503,
@@ -345,7 +345,7 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
                                       units=[1]))
 
 # I need an MODBUS-ADDRESS as Identifyer
-probe.add_handler(probe.ModelRegister(Reg_u16(18124), model503,
+probe.add_handler(probe.ModelRegister(Reg_u16(18124), models503,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
