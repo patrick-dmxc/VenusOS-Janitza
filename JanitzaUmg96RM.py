@@ -193,9 +193,9 @@ class JANITZA_UMG_503(device.EnergyMeter):
         log.info('Janitza Probing')
         try:
             self.info_regs = [
-                Reg_u16(20037, '/HardwareVersion'),
-                Reg_u16(20009, '/FirmwareVersion'),
-                Reg_u32b(911, '/Serial'),
+                # Reg_u16(####, '/HardwareVersion'),
+                Reg_u16(18112, '/FirmwareVersion'),
+                Reg_f32b(18066, '/Serial'),
             ]
         except:
             log.info('Exception while Janitza Probing')
@@ -345,7 +345,7 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
                                       units=[1]))
 
 # I need an MODBUS-ADDRESS as Identifyer
-probe.add_handler(probe.ModelRegister(Reg_s32b(_ADDRESS_FOR_IDENTIFY_), model503,
+probe.add_handler(probe.ModelRegister(Reg_u16(18124), model503,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
