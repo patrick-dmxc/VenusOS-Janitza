@@ -116,7 +116,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
 
 
     def __init__(self, *args):
-        super(JANITZA_UMG_96RM, self).__init__(*args)
+        super(JANITZA_UMG_96PQ, self).__init__(*args)
         log.info('Janitza Probing')
         try:
             self.info_regs = [
