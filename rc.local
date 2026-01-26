@@ -1,0 +1,13 @@
+#!/bin/sh
+# --- Start Janitza Installer ---
+INSTALL_SCRIPT="/data/install-janitza.sh"
+LOG_DIR="/data/janitza"
+LOG_FILE="$LOG_DIR/install-janitza.log"
+if [ -f "$INSTALL_SCRIPT" ]; then
+    mkdir -p "$LOG_DIR"
+    echo "--- Starting Janitza installer from rc.local at $(date) ---" >> "$LOG_FILE"
+    nohup sh "$INSTALL_SCRIPT" >> "$LOG_FILE" 2>&1 &
+fi
+# --- End Janitza Installer ---
+
+exit 0
