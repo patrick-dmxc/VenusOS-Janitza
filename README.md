@@ -17,10 +17,10 @@ Service to use Janitza Meters with Venus OS
 
 
 ## Manual Installation
-1. Download the JanitzaUmg96RM.py: `wget https://raw.githubusercontent.com/patrick-dmxc/VenusOS-Janitza/main/Janitza.py`
-2. Copy JanitzaUmg96RM.py to the victron directory: `cp JanitzaUmg96RM.py /opt/victronenergy/dbus-modbus-client/`
+1. Download the Janitza.py: `wget https://raw.githubusercontent.com/patrick-dmxc/VenusOS-Janitza/main/Janitza.py`
+2. Copy Janitza.py to the victron directory: `cp Janitza.py /opt/victronenergy/dbus-modbus-client/`
 3. Delete or rename the `__pycache__` folder from the same directory
-4. Add the line `import JanitzaUmg96RM` after `import carlo_gavazzi` in the file `dbus-modbus-client.py`
+4. Add the line `import Janitza` after `import carlo_gavazzi` in the file `dbus-modbus-client.py`
 5. Reboot the Cerbo GX
 
 ## Supported Meters
