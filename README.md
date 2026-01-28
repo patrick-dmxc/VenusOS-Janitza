@@ -1,6 +1,6 @@
 # VenusOS-Janitza
 Service to use Janitza Meters with Venus OS
-![Picture](https://github.com/patrick-dmxc/VenusOS-Janitza-UMG-96-RM/blob/main/Picture%201.png?raw=true)
+![Picture](https://github.com/patrick-dmxc/VenusOS-Janitza/blob/main/Picture%201.png?raw=true)
 
 ## Automatic Installation to Survive Firmware Updates
 1. Place sript called `install-janitza.sh` which mimics manual installation flow into `/data` directory by running these commands

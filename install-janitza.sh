@@ -34,7 +34,7 @@ LAUNCHER_GUARD_STRING="# --- Start Janitza Installer ---"
 
 # The code block we want to add (heredoc)
 # Quoting 'EOF' prevents variable expansion *now*
-read -r -d '' LAUNCHER_CODE << 'EOF'
+LAUNCHER_CODE=$(cat <<'EOF'
 
 # --- Start Janitza Installer ---
 INSTALL_SCRIPT="/data/install-janitza.sh"
@@ -48,6 +48,7 @@ fi
 # --- End Janitza Installer ---
 
 EOF
+)
 
 # 2a. Create file with shebang if it doesn't exist
 if [ ! -f "$RC_LOCAL_FILE" ]; then
@@ -140,7 +141,7 @@ fi
 echo "Restarting dbus-modbus-client service..."
 if command -v sv >/dev/null 2>&1; then
     sv restart dbus-modbus-client
-elif command -v svc >/dev/null 2>&1;
+elif command -v svc >/dev/null 2>&1; then
     svc -t /service/dbus-modbus-client
 else
     echo "Warning: no known service manager; please restart the Cerbo/Venus device manually." >&2
@@ -149,4 +150,4 @@ fi
 # --- Step 10: Ensure this installer script itself is executable ---
 chmod +x "$0"
 
-echo "--- Janitza driver installation/update complete. ✅ ---"
+echo "--- Janitza driver installation/update complete. âœ… ---"
