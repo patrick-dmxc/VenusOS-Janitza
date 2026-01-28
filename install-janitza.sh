@@ -24,6 +24,8 @@ CLIENT_PY="$TARGET_DIR/dbus-modbus-client.py"
 DRIVER_DST="$TARGET_DIR/Janitza.py"
 LOCAL_DRIVER="$DATA_DIR/Janitza.py"
 
+exec > >(tee -a "$INSTALL_LOG_FILE") 2>&1
+
 # --- Step 1: Ensure data directory exists ---
 mkdir -p "$DATA_DIR"
 echo "Ensured $DATA_DIR exists."
@@ -37,15 +39,13 @@ LAUNCHER_GUARD_STRING="# --- Start Janitza Installer ---"
 LAUNCHER_CODE=$(cat <<'EOF'
 
 # --- Start Janitza Installer ---
-INSTALL_SCRIPT="/data/install-janitza.sh"
 LOG_DIR="/data/janitza"
 LOG_FILE="$LOG_DIR/install-janitza.log"
-if [ -f "$INSTALL_SCRIPT" ]; then
-    mkdir -p "$LOG_DIR"
-    echo "--- Starting Janitza installer from rc.local at $(date) ---" >> "$LOG_FILE"
-    nohup sh "$INSTALL_SCRIPT" >> "$LOG_FILE" 2>&1 &
-fi
-# --- End Janitza Installer ---
+mkdir -p "$LOG_DIR"
+echo "--- Starting Janitza installer from rc.local at $(date) ---" >> "$LOG_FILE"
+
+/data/install-janitza.sh
+
 
 EOF
 )
@@ -115,26 +115,52 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 # --- Step 6: Install driver ---
-echo "Installing driver to $DRIVER_DST..."
-cp -f "$LOCAL_DRIVER" "$DRIVER_DST"
-chmod 644 "$DRIVER_DST"
+
 
 # --- Step 7: Cleanup old bytecode ---
 echo "Cleaning up old bytecode..."
+find "$DATA_DIR" -type d -name "__pycache__" -exec rm -rf {} +
 find "$TARGET_DIR" -type d -name "__pycache__" -exec rm -rf {} +
 
 # --- Step 8: Inject import if missing ---
-IMPORT_LINE="import Janitza"
-if ! grep -qF "$IMPORT_LINE" "$CLIENT_PY"; then
-    echo "Import not found. Injecting..."
-    if grep -qF "import carlo_gavazzi" "$CLIENT_PY"; then
-        sed -i "/^import carlo_gavazzi/a $IMPORT_LINE" "$CLIENT_PY"
-    else
-        sed -i "/^import /a $IMPORT_LINE" "$CLIENT_PY"
-    fi
-    echo "Injected import into $CLIENT_PY"
+IMPORT_BLOCK="import sys
+if '/data/janitza' not in sys.path:
+    sys.path.insert(0, '/data/janitza')
+import Janitza"
+
+if grep -qF "import Janitza" "$CLIENT_PY"; then
+    echo "Import block already exists. Skipping."
 else
-    echo "Import already exists in $CLIENT_PY."
+    echo "Injecting Janitza import..."
+
+    TMPFILE=$(mktemp)
+
+    inserted=0
+    while IFS= read -r line; do
+        echo "$line" >> "$TMPFILE"
+        
+        if [ $inserted -eq 0 ] && echo "$line" | grep -q "^[[:space:]]*import victron_em"; then
+            printf "%s\n" "$IMPORT_BLOCK" >> "$TMPFILE"
+            inserted=1
+        fi
+    done < "$CLIENT_PY"
+
+    if [ $inserted -eq 0 ]; then
+        TMP2=$(mktemp)
+        first_import_done=0
+        while IFS= read -r line; do
+            echo "$line" >> "$TMP2"
+            if [ $first_import_done -eq 0 ] && echo "$line" | grep -q "^[[:space:]]*import "; then
+                printf "%s\n" "$IMPORT_BLOCK" >> "$TMP2"
+                first_import_done=1
+            fi
+        done < "$TMPFILE"
+        mv "$TMP2" "$TMPFILE"
+    fi
+
+    mv "$TMPFILE" "$CLIENT_PY"
+    chmod +x "$CLIENT_PY"
+    echo "Updated $CLIENT_PY and ensured executable flag"
 fi
 
 # --- Step 9: Restart service ---
@@ -150,4 +176,4 @@ fi
 # --- Step 10: Ensure this installer script itself is executable ---
 chmod +x "$0"
 
-echo "--- Janitza driver installation/update complete. âœ… ---"
+echo "--- Janitza driver installation/update complete. ---"
