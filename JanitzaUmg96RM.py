@@ -1,11 +1,17 @@
 # VenusOS module for support of Janitza UMG 96 Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
+#
+# Version 0.6 - 2026-01-28
+# - Add Support for UMG 103-CBM
+#
 # Version 0.5 - 2025-11-23
 # - Add PowerFactor for Sum of L1, L2 and L3
+#
 # Version 0.4 - 2025-11-22
 # - Add PowerFactor for L1, L2 and L3
 # - Add Line to Line Voltage
+#
 # Version 0.2 - 2024-01-18
 # - Switched Identifyer to ProductNumber
 # - Added other Models
