@@ -1,11 +1,17 @@
 # VenusOS module for support of Janitza Gridmeter/Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
+#
+# Version 0.6 - 2026-01-28
+# - Add Support for UMG 103-CBM
+#
 # Version 0.5 - 2025-11-23
 # - Add PowerFactor for Sum of L1, L2 and L3
+#
 # Version 0.4 - 2025-11-22
 # - Add PowerFactor for L1, L2 and L3
 # - Add Line to Line Voltage
+#
 # Version 0.2 - 2024-01-18
 # - Switched Identifyer to ProductNumber
 # - Added other Models
@@ -178,6 +184,78 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
     def get_ident(self):
         return 'cg_%s' % self.info['/Serial']
 
+class JANITZA_UMG_103CBM(device.EnergyMeter):
+    productid = 0xFFFF
+    productname = 'Janitza UMG 103-CBM'
+    min_timeout = 0.5
+    age_limit_fast = 0
+    refresh_time = 200
+    nr_phases = 3
+
+
+    def __init__(self, *args):
+        super(JANITZA_UMG_103CBM, self).__init__(*args)
+        log.info('Janitza Probing')
+        try:
+            self.info_regs = [
+                Reg_u16(914, '/HardwareVersion'),
+                Reg_u16(913, '/FirmwareVersion'),
+                Reg_u32b(911, '/Serial'),
+            ]
+        except:
+            log.info('Exception while Janitza Probing')
+        log.info('Janitza Probing done')
+
+    def phase_regs(self, n):
+        log.info('Janitza register Phase %d' % n)
+        s = 0x0002 * (n - 1)
+
+        pRegs = None
+        try:
+            pRegs = [
+                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(19062 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
+                Reg_f32b(19068 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(1294   + s, '/Ac/L%d/PowerFactor' % n,      1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza register Phase %d exception while Register f32'% n)
+        log.info('Janitza register Phase %d done'% n)
+        return pRegs
+
+
+    def device_init(self):
+        log.info('Janitza device init')
+        self.read_info()
+
+        phases = 3
+        gRegs = None
+        try:
+            gRegs = [
+                Reg_f32b(19026, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(19018, '/Ac/Current',           1, '%.3f A'),
+                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
+                Reg_f32b(19068, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
+                Reg_f32b(19076, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+                Reg_f32b(1300 , '/Ac/PowerFactor',       1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza device exception while Register f32')
+
+
+        for n in range(1, phases + 1):
+            gRegs += self.phase_regs(n)
+
+        log.info('Janitza set Registers')
+        self.data_regs = gRegs
+        log.info('Janitza device init done')
+
+    def get_ident(self):
+        return 'cg_%s' % self.info['/Serial']
+
 models96RM = {
     5222036: {
         'model':    'UMG 96 RM-E-RCM',
@@ -252,12 +330,25 @@ models96PQ = {
     },
 }
 
+models103CBM = {    
+    5228001: {
+        'model':    'UMG 103-CBM',
+        'handler':  JANITZA_UMG_103CBM,
+    },
+}
+
 probe.add_handler(probe.ModelRegister(Reg_s32b(769), models96RM,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
 
 probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
+                                      methods=['rtu','tcp'],
+                                      rates=[115200],
+                                      units=[1]))
+
+
+probe.add_handler(probe.ModelRegister(Reg_s32b(20016), models103CBM,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
