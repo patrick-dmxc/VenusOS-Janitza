@@ -119,8 +119,8 @@ fi
 
 # --- Step 7: Cleanup old bytecode ---
 echo "Cleaning up old bytecode..."
-find "$DATA_DIR" -type d -name "__pycache__" -exec rm -rf {} +
-find "$TARGET_DIR" -type d -name "__pycache__" -exec rm -rf {} +
+find "$DATA_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+find "$TARGET_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 # --- Step 8: Inject import if missing ---
 IMPORT_BLOCK="import sys
@@ -157,10 +157,12 @@ else
         done < "$TMPFILE"
         mv "$TMP2" "$TMPFILE"
     fi
-
-    mv "$TMPFILE" "$CLIENT_PY"
+    
+    sleep 15
+    mv -f "$TMPFILE" "$CLIENT_PY"
     chmod +x "$CLIENT_PY"
     echo "Updated $CLIENT_PY and ensured executable flag"
+
 fi
 
 # --- Step 9: Restart service ---
