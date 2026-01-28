@@ -114,8 +114,10 @@ if [ ! -d "$TARGET_DIR" ]; then
     exit 1
 fi
 
-# --- Step 6: Install driver ---
-
+# --- Step 6: Ensuring executable bit ---
+chmod +x "$CLIENT_PY" || {
+    /opt/victronenergy/swupdate-scripts/remount-rw.sh
+}
 
 # --- Step 7: Cleanup old bytecode ---
 echo "Cleaning up old bytecode..."
@@ -159,6 +161,7 @@ else
     fi
     
     sleep 15
+    chmod +x "$CLIENT_PY"
     mv -f "$TMPFILE" "$CLIENT_PY"
     chmod +x "$CLIENT_PY"
     echo "Updated $CLIENT_PY and ensured executable flag"
