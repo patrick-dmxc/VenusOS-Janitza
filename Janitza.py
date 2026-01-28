@@ -1,4 +1,4 @@
-# VenusOS module for support of Janitza UMG 96 Analyzer - and maybe others
+# VenusOS module for support of Janitza Gridmeter/Analyzer - and maybe others
 # 
 # Community contribution by Patrick Grote
 #
