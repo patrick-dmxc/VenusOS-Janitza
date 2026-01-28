@@ -160,7 +160,6 @@ else
         mv "$TMP2" "$TMPFILE"
     fi
     
-    sleep 15
     chmod +x "$CLIENT_PY"
     mv -f "$TMPFILE" "$CLIENT_PY"
     chmod +x "$CLIENT_PY"
