@@ -22,9 +22,22 @@ Service to use Janitza Meters with Venus OS
 5. Reboot the Cerbo GX
 
 ## Supported Meters
-UMG 96 RM [all variations with Modbus RTU or Modbus TCP]\
-UMG 96 PQ [all variations with Modbus RTU or Modbus TCP] (untested)\
-UMG 103-CBM [with Modbus RTU or Modbus TCP]
+| Device               | Modbus RTU | Modbus TCP         | Status                       | Notes                     |
+|----------------------|------------|--------------------|------------------------------|---------------------------|
+| UMG 96 RM            | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
+| UMG 96 RM-E-RCM      | ✅         |  ✅               | 🟡 untested                  | —                         |
+| UMG 96 RM-E          | ✅         |  ✅               | 🟢 tested by @patrick-dmxc   | —                         |
+| UMG 96 RM-P          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
+| UMG 96 RM-CBM        | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
+| UMG 96 RM-M          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
+| UMG 96 RM-PN         | ✅         |  ✅               | 🟡 untested                  | —                         |
+| UMG 96 RM (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
+| UMG 96 PQ-L          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
+| UMG 96 PQ (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
+| UMG 103-CBM          | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                         |
+| ohters               ||| [Request](https://github.com/patrick-dmxc/VenusOS-Janitza/issues/new/choose) | possible   |
+
+Please provide feedback if your Device is working or not with this Script
 
 ## Issues
 If its not working, please open an issue and we can fix it
