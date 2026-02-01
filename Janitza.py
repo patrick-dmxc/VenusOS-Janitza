@@ -395,13 +395,6 @@ models96RM = {
     },
 }
 
-models96S2 = {    
-    5234002: {
-        'model':    'UMG 96 S2',
-        'handler':  JANITZA_UMG_96S2,
-    },
-}
-
 models96PQ = {    
     45030080: {
         'model':    'UMG 96 PQ-L',
@@ -409,19 +402,18 @@ models96PQ = {
     },
 }
 
-models103CBM = {    
+modelsRegister_20016 = {    
     5228001: {
         'model':    'UMG 103-CBM',
         'handler':  JANITZA_UMG_103CBM,
     },
+    5234002: {
+        'model':    'UMG 96 S2',
+        'handler':  JANITZA_UMG_96S2,
+    },
 }
 
 probe.add_handler(probe.ModelRegister(Reg_s32b(769), models96RM,
-                                      methods=['rtu','tcp'],
-                                      rates=[115200],
-                                      units=[1]))
-
-probe.add_handler(probe.ModelRegister(Reg_s32b(20016), models96S2,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
@@ -432,7 +424,7 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
                                       units=[1]))
 
 
-probe.add_handler(probe.ModelRegister(Reg_s32b(20016), models103CBM,
+probe.add_handler(probe.ModelRegister(Reg_s32b(20016), modelsRegister_20016,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
