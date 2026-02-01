@@ -31,6 +31,7 @@ Service to use Janitza Meters with Venus OS
 | UMG 96 RM-CBM        | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
 | UMG 96 RM-M          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
 | UMG 96 RM-PN         | ✅         |  ✅               | 🟡 untested                  | —                         |
+| UMG 96 S2            | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                         |
 | UMG 96 RM (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
 | UMG 96 PQ-L          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
 | UMG 96 PQ (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
