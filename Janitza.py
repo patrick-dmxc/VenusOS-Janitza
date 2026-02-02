@@ -110,7 +110,7 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
         log.info('Janitza device init done')
 
     def get_ident(self):
-        return 'cg_%s' % self.info['/Serial']
+        return f"{self.vendor_id}_{self.info['/Serial']}"
 
 class JANITZA_UMG_96PQ(device.EnergyMeter):
     vendor_id = 'ja'
@@ -184,7 +184,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
         log.info('Janitza device init done')
 
     def get_ident(self):
-        return 'cg_%s' % self.info['/Serial']
+        return f"{self.vendor_id}_{self.info['/Serial']}"
 
 class JANITZA_UMG_103CBM(device.EnergyMeter):
     vendor_id = 'ja'
@@ -258,7 +258,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
         log.info('Janitza device init done')
 
     def get_ident(self):
-        return 'cg_%s' % self.info['/Serial']
+        return f"{self.vendor_id}_{self.info['/Serial']}"
 
 models96RM = {
     5222036: {
