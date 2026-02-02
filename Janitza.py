@@ -2,6 +2,9 @@
 # 
 # Community contribution by Patrick Grote
 #
+# Version 0.7 - 2026-02-02
+# - Add Support for UMG 96-S2
+#
 # Version 0.6 - 2026-01-28
 # - Add Support for UMG 103-CBM
 #
@@ -26,12 +29,6 @@ import probe
 from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_num
 
 log = logging.getLogger()
-        
-#class Reg_f32b(Reg_num): # Works in 3.10
-#    def __init__(self, base, *args, **kwargs):
-#        super(Reg_f32b, self).__init__(base, 2, *args, **kwargs)
-#        self.coding = ('>f', '>2H')
-#        self.scale = float(self.scale)
 
 class Reg_f32b(Reg_num):
     coding = ('>f', '>2H')
