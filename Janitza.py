@@ -33,14 +33,14 @@ log = logging.getLogger()
 #        self.coding = ('>f', '>2H')
 #        self.scale = float(self.scale)
 
-### Untested 3.11 & 3.12
-
-class Reg_f32b(Reg_num): # Works in 3.13
+class Reg_f32b(Reg_num):
     coding = ('>f', '>2H')
     count = 2
     rtype = float
 
 class JANITZA_UMG_96RM(device.EnergyMeter):
+    vendor_id = 'ja'
+    vendor_name = 'Janitza'
     productid = 0xFFFF
     productname = 'Janitza UMG 96 RM'
     min_timeout = 0.5
@@ -113,6 +113,8 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
         return 'cg_%s' % self.info['/Serial']
 
 class JANITZA_UMG_96PQ(device.EnergyMeter):
+    vendor_id = 'ja'
+    vendor_name = 'Janitza'
     productid = 0xFFFF
     productname = 'Janitza UMG 96 PQ'
     min_timeout = 0.5
@@ -185,6 +187,8 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
         return 'cg_%s' % self.info['/Serial']
 
 class JANITZA_UMG_103CBM(device.EnergyMeter):
+    vendor_id = 'ja'
+    vendor_name = 'Janitza'
     productid = 0xFFFF
     productname = 'Janitza UMG 103-CBM'
     min_timeout = 0.5
@@ -346,7 +350,6 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
-
 
 probe.add_handler(probe.ModelRegister(Reg_s32b(20016), models103CBM,
                                       methods=['rtu','tcp'],
