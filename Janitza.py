@@ -29,7 +29,7 @@
 import logging
 import device
 import probe
-from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_num
+from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_s64b, Reg_u64b, Reg_num, Reg_text
 
 log = logging.getLogger()
 
