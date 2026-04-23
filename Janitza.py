@@ -2,6 +2,9 @@
 # 
 # Community contribution by Patrick Grote
 #
+# Version 0.8 - 2026-04-23
+# - Add Support for UMG 801
+#
 # Version 0.7 - 2026-02-02
 # - Add Support for UMG 96-S2
 #
@@ -26,7 +29,7 @@
 import logging
 import device
 import probe
-from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_num
+from register import Reg_s16, Reg_u16, Reg_s32b, Reg_u32b, Reg_s64b, Reg_u64b, Reg_num, Reg_text
 
 log = logging.getLogger()
 
@@ -330,6 +333,79 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
+    
+class JANITZA_UMG_801(device.EnergyMeter):
+    vendor_id = 'ja'
+    vendor_name = 'Janitza'
+    productid = 0xFFFF
+    productname = 'Janitza UMG 801'
+    min_timeout = 0.5
+    age_limit_fast = 0
+    refresh_time = 200
+    nr_phases = 3
+
+
+    def __init__(self, *args):
+        super(JANITZA_UMG_801, self).__init__(*args)
+        log.info('Janitza Probing')
+        try:
+            self.info_regs = [
+                Reg_u64b(4164, '/HardwareVersion'),
+                Reg_text(4132, 32, '/FirmwareVersion'),
+                Reg_u64b(4174, '/Serial'),
+            ]
+        except:
+            log.info('Exception while Janitza Probing')
+        log.info('Janitza Probing done')
+
+    def phase_regs(self, n):
+        log.info('Janitza register Phase %d' % n)
+        s = 0x0002 * (n - 1)
+
+        pRegs = None
+        try:
+            pRegs = [
+                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(19054 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
+                Reg_f32b(19070 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(19044 + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza register Phase %d exception while Register f32'% n)
+        log.info('Janitza register Phase %d done'% n)
+        return pRegs
+
+
+    def device_init(self):
+        log.info('Janitza device init')
+        self.read_info()
+
+        phases = 3
+        gRegs = None
+        try:
+            gRegs = [
+                Reg_f32b(19026, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(19018, '/Ac/Current',           1, '%.3f A'),
+                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
+                Reg_f32b(19060, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
+                Reg_f32b(19076, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+            ]
+        except:
+            log.info('Janitza device exception while Register f32')
+
+
+        for n in range(1, phases + 1):
+            gRegs += self.phase_regs(n)
+
+        log.info('Janitza set Registers')
+        self.data_regs = gRegs
+        log.info('Janitza device init done')
+
+    def get_ident(self):
+        return f"{self.vendor_id}_{self.info['/Serial']}"
 
 models96RM = {
     5222036: {
@@ -416,6 +492,13 @@ modelsRegister_20016 = {
     },
 }
 
+modelsRegister_4170 = {    
+    2001295849: {
+        'model':    'UMG 801',
+        'handler':  JANITZA_UMG_801,
+    },
+}
+
 probe.add_handler(probe.ModelRegister(Reg_s32b(769), models96RM,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
@@ -426,8 +509,12 @@ probe.add_handler(probe.ModelRegister(Reg_s32b(194), models96PQ,
                                       rates=[115200],
                                       units=[1]))
 
-
 probe.add_handler(probe.ModelRegister(Reg_s32b(20016), modelsRegister_20016,
+                                      methods=['rtu','tcp'],
+                                      rates=[115200],
+                                      units=[1]))
+
+probe.add_handler(probe.ModelRegister(Reg_u64b(4170), modelsRegister_4170,
                                       methods=['rtu','tcp'],
                                       rates=[115200],
                                       units=[1]))
