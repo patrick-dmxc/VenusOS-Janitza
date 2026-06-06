@@ -493,7 +493,7 @@ modelsRegister_20016 = {
 }
 
 modelsRegister_4170 = {    
-    2001295849: {
+    2001299945: {
         'model':    'UMG 801',
         'handler':  JANITZA_UMG_801,
     },
