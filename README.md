@@ -36,7 +36,7 @@ Service to use Janitza Meters with Venus OS
 | UMG 96 PQ-L          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
 | UMG 96 PQ (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
 | UMG 103-CBM          | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                         |
-| UMG 801              | ✅         | (✅) with Gateway | 🟢 tested by @fghjufdhk      | —                         |
+| UMG 801              | ✅         | ✅                | 🟢 tested by @fghjufdhk      | —                         |
 | ohters               ||| [Request](https://github.com/patrick-dmxc/VenusOS-Janitza/issues/new/choose) | possible   |
 
 Please provide feedback if your Device is working or not with this Script
