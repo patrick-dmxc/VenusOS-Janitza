@@ -467,7 +467,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
         self.settings['customname'] = f'Janitza UMG 801 Basic Group {self.basic_group_num}'
 
-class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
+class JANITZA_UMG_801(device.CustomName, device.BaseDevice):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
@@ -491,41 +491,41 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             log.info('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
-    def phase_regs(self, n):
-        log.info('Janitza register Phase %d' % n)
-        s = 0x0002 * (n - 1)
+    # def phase_regs(self, n):
+    #     log.info('Janitza register Phase %d' % n)
+    #     s = 0x0002 * (n - 1)
 
-        pRegs = None
-        try:
-            pRegs = [
-                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
-                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
-            ]
-        except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
-        log.info('Janitza register Phase %d done'% n)
-        return pRegs
+    #     pRegs = None
+    #     try:
+    #         pRegs = [
+    #             Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+    #             Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+    #         ]
+    #     except:
+    #         log.info('Janitza register Phase %d exception while Register f32'% n)
+    #     log.info('Janitza register Phase %d done'% n)
+    #     return pRegs
 
 
     def device_init(self):
         log.info('Janitza UMG 801 device init')
         self.read_info()
 
-        phases = 3
-        gRegs = None
-        try:
-            gRegs = [
-                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
-            ]
-        except:
-            log.info('Janitza device exception while Register f32')
+        # phases = 3
+        # gRegs = None
+        # try:
+        #     gRegs = [
+        #         Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
+        #     ]
+        # except:
+        #     log.info('Janitza device exception while Register f32')
 
 
-        for n in range(1, phases + 1):
-            gRegs += self.phase_regs(n)
+        # for n in range(1, phases + 1):
+        #     gRegs += self.phase_regs(n)
 
-        log.info('Janitza set Registers')
-        self.data_regs = gRegs
+        # log.info('Janitza set Registers')
+        # self.data_regs = gRegs
         
         # Create SubDevices for each Basic Groub
         log.info('Janitza add Basic Groubs')
