@@ -343,6 +343,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
     age_limit_fast = 0
     refresh_time = 200
     nr_phases = 3
+    default_role = 'grid'
+    default_instance = 41
 
     def __init__(self, parent, basic_group_num):
         super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}')
