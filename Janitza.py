@@ -550,26 +550,40 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
 
-    def update_basic_group_subdevices(self):
-        log.info(f'Janitza UMG 801  update_basic_group_subdevices')
+    def update_basic_group_subdevices(self, init_new_subdevices=False):
+        log.info('Janitza UMG 801 update_basic_group_subdevices')
         for basic_group_num in range(1, 4):
             setting_name = f'basicgroup{basic_group_num}'
             enabled = bool(self.settings[setting_name])
             subdevice = next((s for s in self.subdevices if s.basic_group_num == basic_group_num), None)
 
-            if subdevice is not None:
-                if enabled and not subdevice.enabled:
-                    subdevice.enabled = True
-                    log.info(f'Janitza enabled Basic Groub {basic_group_num}')
-                elif not enabled and subdevice.enabled:
-                    subdevice.enabled = False
-                    log.info(f'Janitza disabled Basic Groub {basic_group_num}')
+            if enabled and subdevice is None:
+                try:
+                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
+                    self.subdevices.append(subdevice)
+                    log.info(f'Janitza added Basic Groub {basic_group_num} as subdevice')
+
+                    # During runtime setting changes we must initialize newly created subdevices immediately.
+                    if init_new_subdevices:
+                        subdevice.init()
+                        log.info(f'Janitza initialized Basic Groub {basic_group_num}')
+                except Exception as e:
+                    log.info(f'Janitza exception adding Basic Groub {basic_group_num}: {e}')
+
+            elif not enabled and subdevice is not None:
+                try:
+                    subdevice.destroy()
+                except Exception as e:
+                    log.info(f'Janitza exception destroying Basic Groub {basic_group_num}: {e}')
+
+                self.subdevices = [s for s in self.subdevices if s.basic_group_num != basic_group_num]
+                log.info(f'Janitza removed Basic Groub {basic_group_num} as subdevice')
 
     def setting_changed(self, name, old, new):
         result = super().setting_changed(name, old, new)
 
         if name.startswith('basicgroup'):
-            self.update_basic_group_subdevices()
+            self.update_basic_group_subdevices(init_new_subdevices=True)
             return True
 
         return result
@@ -584,7 +598,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 self.add_settings({setting_name: [f'/EnabledBasicGroup{basic_group_num}', 1, 0, 1] })
                 self.add_dbus_setting(setting_name, f'/EnabledBasicGroup{basic_group_num}')
 
-        self.update_basic_group_subdevices()
+        self.update_basic_group_subdevices(init_new_subdevices=False)
 
 models96RM = {
     5222036: {
