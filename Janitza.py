@@ -333,7 +333,111 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
-    
+
+class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
+    vendor_id = 'ja'
+    vendor_name = 'Janitza'
+    productid = 0xFFFF
+    productname = 'Janitza UMG 801'
+    min_timeout = 0.5
+    age_limit_fast = 0
+    refresh_time = 200
+    nr_phases = 3
+
+    def __init__(self, parent, basic_group_num):
+        super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}')
+        self.basic_group_num = basic_group_num
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Probing')
+        
+        # Calculate base address offset for this module (each module has 80 register offset)
+        module_offset = (self.basic_group_num - 1) * 80
+        
+        try:
+            self.info_regs = [
+                Reg_u64b(4164, '/HardwareVersion'),
+                Reg_text(4132, 32, '/FirmwareVersion'),
+                Reg_u64b(4174, '/Serial'),
+            ]
+        except Exception as e:
+            log.info(f'Exception while Janitza Probing Basic Group {self.basic_group_num}: {e}')
+        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} Probing done')
+
+
+    def phase_regs(self, n):
+        log.info('Janitza register Phase %d' % n)
+        s = 0x0002 * (n - 1)
+
+        pRegs = None
+        currentAddress=19012
+        powerAddress=19020
+        energyFwdAddress=19054
+        energyRevAddress=19070
+        powerFactorAddress=19044
+        if(self.basic_group_num!=0):
+            currentAddress=19000 + ((self.basic_group_num + 1)*100)
+            powerAddress=19000 + ((self.basic_group_num + 1)*100) + 8
+            energyFwdAddress=19000 + ((self.basic_group_num + 1)*100) + 38
+            energyRevAddress=19000 + ((self.basic_group_num + 1)*100) + 54
+            powerFactorAddress=19000 + ((self.basic_group_num + 1)*100) + 32
+        
+        try:
+            pRegs = [
+                Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
+                Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
+                Reg_f32b(currentAddress + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
+                Reg_f32b(powerAddress + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(energyFwdAddress + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
+                Reg_f32b(energyRevAddress + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
+                Reg_f32b(powerFactorAddress + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
+            ]
+        except:
+            log.info('Janitza register Phase %d exception while Register f32'% n)
+        log.info('Janitza register Phase %d done'% n)
+        return pRegs
+
+
+    def device_init(self):
+        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init')
+        
+        phases = 3
+        gRegs = None
+
+        powerAddress=19026
+        currentAddress=19018
+        energyFwdAddress=19060        
+        powerFactorAddress=19076
+        if(self.basic_group_num!=0):
+            powerAddress=19000 + ((self.basic_group_num + 1)*100) + 14
+            currentAddress=19000 + ((self.basic_group_num + 1)*100) + 6
+            energyFwdAddress=19000 + ((self.basic_group_num + 1)*100) + 44
+            powerFactorAddress=19000 + ((self.basic_group_num + 1)*100) + 60
+            
+        try:
+            gRegs = [
+                Reg_f32b(powerAddress, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(currentAddress, '/Ac/Current',           1, '%.3f A'),
+                Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
+                Reg_f32b(energyFwdAddress, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
+                Reg_f32b(powerFactorAddress, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+            ]
+        except:
+            log.info('Janitza device exception while Register f32')
+        
+        for n in range(1, phases + 1):
+            gRegs += self.phase_regs(n)
+
+        self.data_regs = gRegs
+        log.info(f'Janitza UMG 801 Module {self.module_num} device init done')
+
+    def get_ident(self):
+        return f"{self.parent.vendor_id}_{self.parent.info['/Serial']}_BG{self.module_num:02d}"
+
+    def get_name(self):
+        # Try to get the basic group name from info
+        if '/Name' in self.info:
+            return self.info['/Name']
+        return f"Basic Group {self.module_num}"
+
 class JANITZA_UMG_801(device.EnergyMeter):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
@@ -367,11 +471,6 @@ class JANITZA_UMG_801(device.EnergyMeter):
             pRegs = [
                 Reg_f32b(19000 + s, '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
                 Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
-                Reg_f32b(19012 + s, '/Ac/L%d/Current' % n,           1, '%.3f A'),
-                Reg_f32b(19020 + s, '/Ac/L%d/Power' % n,             1, '%.3f W'),
-                Reg_f32b(19054 + s, '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
-                Reg_f32b(19070 + s, '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
-                Reg_f32b(19044 + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
             log.info('Janitza register Phase %d exception while Register f32'% n)
@@ -380,18 +479,14 @@ class JANITZA_UMG_801(device.EnergyMeter):
 
 
     def device_init(self):
-        log.info('Janitza device init')
+        log.info('Janitza UMG 801 device init')
         self.read_info()
 
         phases = 3
         gRegs = None
         try:
             gRegs = [
-                Reg_f32b(19026, '/Ac/Power',             1, '%.3f W'),
-                Reg_f32b(19018, '/Ac/Current',           1, '%.3f A'),
                 Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
-                Reg_f32b(19060, '/Ac/Energy/Forward', 1000, '%.3f kWh'),
-                Reg_f32b(19076, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
             ]
         except:
             log.info('Janitza device exception while Register f32')
@@ -402,7 +497,21 @@ class JANITZA_UMG_801(device.EnergyMeter):
 
         log.info('Janitza set Registers')
         self.data_regs = gRegs
-        log.info('Janitza device init done')
+        
+        # Create SubDevices for each Basic Groub
+        log.info('Janitza add Basic Groubs')
+        try:
+            for module_num in range(0, 2):  # Basic Groubs 1-3                
+                try:
+                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, module_num)
+                    self.subdevices.append(subdevice)
+                    log.info(f'Janitza added Module {module_num} as subdevice')
+                except Exception as e:
+                    log.info(f'Janitza exception adding Module {module_num}: {e}')
+        except Exception as e:
+            log.info(f'Janitza exception scanning modules: {e}')
+        
+        log.info('Janitza UMG 801 device init done')
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
