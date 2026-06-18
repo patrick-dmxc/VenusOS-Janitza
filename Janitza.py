@@ -349,7 +349,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
     def __init__(self, parent, basic_group_num):
         super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}')
         self.basic_group_num = basic_group_num
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Probing')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} __init__')
         self.productname = f'Janitza UMG 801 Basic Group {basic_group_num}'
                 
         try:
@@ -376,14 +376,14 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         energyFwdAddress=19054 + s
         energyRevAddress=19070 + s
         powerFactorAddress=19044 + s
-        if(basic_group_num > 0):
+        if(basic_group_num > 1):
             baseOffset=((basic_group_num + 1)*100) + s
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with offset {baseOffset}')
-            currentAddress=19000 + ((basic_group_num + 1)*100) + s
-            powerAddress=19000 + ((basic_group_num + 1)*100) + 8 + s
-            energyFwdAddress=19000 + ((basic_group_num + 1)*100) + 38 + s
-            energyRevAddress=19000 + ((basic_group_num + 1)*100) + 54 + s
-            powerFactorAddress=19000 + ((basic_group_num + 1)*100) + 32 + s
+            currentAddress=19000 + baseOffset
+            powerAddress=19000 + baseOffset + 8
+            energyFwdAddress=19000 + baseOffset + 38
+            energyRevAddress=19000 + baseOffset + 54
+            powerFactorAddress=19000 + baseOffset + 32
         else:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with no offset')
             
@@ -409,6 +409,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
     def device_init(self):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init')
         
+        basic_group_num = self.basic_group_num
         phases = 3
         gRegs = None
 
@@ -417,13 +418,17 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         frequencyAddress=19050
         energyFwdAddress=19060        
         powerFactorAddress=19076
-        if(self.basic_group_num > 0):
-            powerAddress=19000 + ((self.basic_group_num + 1)*100) + 14
-            currentAddress=19000 + ((self.basic_group_num + 1)*100) + 6
-            energyFwdAddress=19000 + ((self.basic_group_num + 1)*100) + 44
-            powerFactorAddress=19000 + ((self.basic_group_num + 1)*100) + 60
+        if(basic_group_num > 1):
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with offset')
+            baseOffset=((basic_group_num + 1)*100)
+            powerAddress=19000 + baseOffset + 14
+            currentAddress=19000 + baseOffset + 6
+            energyFwdAddress=19000 + baseOffset + 44
+            powerFactorAddress=19000 + baseOffset + 60
+        else:
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with no offset')
             
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} Addresses: Power {powerAddress}, Current {currentAddress}, EnergyFwd {energyFwdAddress}, PowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nPowerFactor {powerFactorAddress}')
         try:
             gRegs = [
                 Reg_f32b(powerAddress,       '/Ac/Power',             1, '%.3f W'),
@@ -433,13 +438,13 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
                 Reg_f32b(powerFactorAddress, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
             ]
         except:
-            log.info('Janitza UMG 801 Basic Group {self.basic_group_num} device exception while Register f32')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device exception while Register f32')
         
         for n in range(1, phases + 1):
             gRegs += self.phase_regs(n)
 
         self.data_regs = gRegs
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init done')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device init done')
 
     def get_ident(self):
         return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}"
@@ -513,7 +518,7 @@ class JANITZA_UMG_801(device.EnergyMeter):
         # Create SubDevices for each Basic Groub
         log.info('Janitza add Basic Groubs')
         try:
-            for basic_group_num in range(0, 3):  # Basic Groubs 1-3                
+            for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
                 try:
                     subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
                     self.subdevices.append(subdevice)
