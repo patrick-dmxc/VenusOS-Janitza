@@ -465,18 +465,11 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
 
     def device_init_late(self):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
-        if self.dbus is None or '/CustomName' not in self.dbus:
-            device.CustomName.device_init_late(self)
-        elif 'customname' not in self.dbus_settings:
-            self.add_settings({'customname': ['/CustomName', '', 0, 0]})
-            self.add_dbus_setting('customname', '/CustomName')
 
         if self.position is None and self.role in ('pvinverter', 'evcharger', 'heatpump', 'acload', 'genset'):
             if 'position' not in self.dbus_settings:
                 self.add_settings({'position': ['/Position', 0, 0, 2]})
                 self.add_dbus_setting('position', '/Position')
-
-        self.settings['customname'] = f'Janitza UMG 801 Basic Group {self.basic_group_num}'
 
 class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     vendor_id = 'ja'
@@ -582,11 +575,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
 
     def device_init_late(self):
         log.info(f'Janitza UMG 801 device init late')
-        if self.dbus is None or '/CustomName' not in self.dbus:
-            device.CustomName.device_init_late(self)
-        elif 'customname' not in self.dbus_settings:
-            self.add_settings({'customname': ['/CustomName', '', 0, 0]})
-            self.add_dbus_setting('customname', '/CustomName')
 
         for basic_group_num in range(1, 4):
             setting_name = f'basicgroup{basic_group_num}'
@@ -595,8 +583,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 self.add_dbus_setting(setting_name, f'/EnabledBasicGroup{basic_group_num}')
 
         self.update_basic_group_subdevices()
-
-        self.settings['customname'] = 'Janitza UMG 801'
 
 models96RM = {
     5222036: {
