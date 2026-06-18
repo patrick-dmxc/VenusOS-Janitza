@@ -468,7 +468,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.EnergyMeter, device.SubDevice, device.C
     #     self.add_settings({'customname': ['/CustomName', '', 0, 0]})
     #     self.add_dbus_setting('customname', '/CustomName')
 
-class JANITZA_UMG_801(device.EnergyMeter):
+class JANITZA_UMG_801(device.EnergyMeter, device.CustomName):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
