@@ -427,16 +427,16 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
             gRegs += self.phase_regs(n)
 
         self.data_regs = gRegs
-        log.info(f'Janitza UMG 801 Module {self.module_num} device init done')
+        log.info(f'Janitza UMG 801 Module {self.basic_group_num} device init done')
 
     def get_ident(self):
-        return f"{self.parent.vendor_id}_{self.parent.info['/Serial']}_BG{self.module_num:02d}"
+        return f"{self.parent.vendor_id}_{self.parent.info['/Serial']}_BG{self.basic_group_num:02d}"
 
     def get_name(self):
         # Try to get the basic group name from info
         if '/Name' in self.info:
             return self.info['/Name']
-        return f"Basic Group {self.module_num}"
+        return f"Basic Group {self.basic_group_num}"
 
 class JANITZA_UMG_801(device.EnergyMeter):
     vendor_id = 'ja'
@@ -501,13 +501,13 @@ class JANITZA_UMG_801(device.EnergyMeter):
         # Create SubDevices for each Basic Groub
         log.info('Janitza add Basic Groubs')
         try:
-            for module_num in range(0, 2):  # Basic Groubs 1-3                
+            for basic_group_num in range(0, 2):  # Basic Groubs 1-3                
                 try:
-                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, module_num)
+                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
                     self.subdevices.append(subdevice)
-                    log.info(f'Janitza added Module {module_num} as subdevice')
+                    log.info(f'Janitza added Module {basic_group_num} as subdevice')
                 except Exception as e:
-                    log.info(f'Janitza exception adding Module {module_num}: {e}')
+                    log.info(f'Janitza exception adding Module {basic_group_num}: {e}')
         except Exception as e:
             log.info(f'Janitza exception scanning modules: {e}')
         
