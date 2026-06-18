@@ -465,6 +465,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
 
     def device_init_late(self):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
+        super().device_init_late()
 
         if self.position is None and self.role in ('pvinverter', 'evcharger', 'heatpump', 'acload', 'genset'):
             if 'position' not in self.dbus_settings:

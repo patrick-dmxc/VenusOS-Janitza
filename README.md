@@ -22,21 +22,21 @@ Service to use Janitza Meters with Venus OS
 5. Reboot the Cerbo GX
 
 ## Supported Meters
-| Device               | Modbus RTU | Modbus TCP         | Status                       | Notes                     |
-|----------------------|------------|--------------------|------------------------------|---------------------------|
-| UMG 96 RM            | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
-| UMG 96 RM-E-RCM      | ✅         |  ✅               | 🟡 untested                  | —                         |
-| UMG 96 RM-E          | ✅         |  ✅               | 🟢 tested by @patrick-dmxc   | —                         |
-| UMG 96 RM-P          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
-| UMG 96 RM-CBM        | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
-| UMG 96 RM-M          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
-| UMG 96 RM-PN         | ✅         |  ✅               | 🟡 untested                  | —                         |
-| UMG 96 S2            | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                         |
-| UMG 96 RM (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
-| UMG 96 PQ-L          | ✅         | (✅) with Gateway | 🟡 untested                  | —                         |
-| UMG 96 PQ (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                  |
-| UMG 103-CBM          | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                         |
-| UMG 801              | ✅         | ✅                | 🟢 tested by @fghjufdhk      | —                         |
+| Device               | Modbus RTU | Modbus TCP         | Status                       | Notes                                      |
+|----------------------|------------|--------------------|------------------------------|--------------------------------------------|
+| UMG 96 RM            | ✅         | (✅) with Gateway | 🟡 untested                  | —                                          |
+| UMG 96 RM-E-RCM      | ✅         |  ✅               | 🟡 untested                  | —                                          |
+| UMG 96 RM-E          | ✅         |  ✅               | 🟢 tested by @patrick-dmxc   | —                                          |
+| UMG 96 RM-P          | ✅         | (✅) with Gateway | 🟡 untested                  | —                                          |
+| UMG 96 RM-CBM        | ✅         | (✅) with Gateway | 🟡 untested                  | —                                          |
+| UMG 96 RM-M          | ✅         | (✅) with Gateway | 🟡 untested                  | —                                          |
+| UMG 96 RM-PN         | ✅         |  ✅               | 🟡 untested                  | —                                          |
+| UMG 96 S2            | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                                          |
+| UMG 96 RM (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                                   |
+| UMG 96 PQ-L          | ✅         | (✅) with Gateway | 🟡 untested                  | —                                          |
+| UMG 96 PQ (ohters)   | ✅         | (✅) with Gateway | 🟡 untested                  | possible                                   |
+| UMG 103-CBM          | ✅         | (✅) with Gateway | 🟢 tested by @kommando828    | —                                          |
+| UMG 801              | ✅         | ✅                | 🟢 tested by @fghjufdhk      | All 3 Basic Groubs and 20 Expansion Groubs |
 | ohters               ||| [Request](https://github.com/patrick-dmxc/VenusOS-Janitza/issues/new/choose) | possible   |
 
 Please provide feedback if your Device is working or not with this Script
