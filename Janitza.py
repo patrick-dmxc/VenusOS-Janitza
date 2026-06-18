@@ -467,28 +467,10 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
         super().device_init_late()
 
-        if 'enabled' not in self.dbus_settings:
-            self.add_settings({'enabled': ['/Enabled', 1 if self.enabled else 0, 0, 1]})
-            self.add_dbus_setting('enabled', '/Enabled')
-
-        # Apply persisted value after settings are initialized.
-        self.enabled = bool(self.settings['enabled'])
-
         if self.position is None and self.role in ('pvinverter', 'evcharger', 'heatpump', 'acload', 'genset'):
             if 'position' not in self.dbus_settings:
                 self.add_settings({'position': ['/Position', 0, 0, 2]})
                 self.add_dbus_setting('position', '/Position')
-
-    def setting_changed(self, name, old, new):
-        result = super().setting_changed(name, old, new)
-
-        if name == 'enabled':
-            self.enabled = bool(new)
-            if hasattr(self.parent, 'sync_basic_group_from_subdevice'):
-                self.parent.sync_basic_group_from_subdevice(self.basic_group_num, self.enabled)
-            return True
-
-        return result
 
 class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     vendor_id = 'ja'
@@ -583,22 +565,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                     subdevice.enabled = False
                     log.info(f'Janitza disabled Basic Groub {basic_group_num}')
 
-                # Keep subdevice /Enabled setting in sync once subdevice settings exist.
-                if subdevice.settings is not None and 'enabled' in getattr(subdevice, '_settings', {}):
-                    desired = 1 if enabled else 0
-                    if int(subdevice.settings['enabled']) != desired:
-                        subdevice.settings['enabled'] = desired
-
-    def sync_basic_group_from_subdevice(self, basic_group_num, enabled):
-        setting_name = f'basicgroup{basic_group_num}'
-
-        if self.settings is None or setting_name not in self._settings:
-            return
-
-        desired = 1 if enabled else 0
-        if int(self.settings[setting_name]) != desired:
-            self.settings[setting_name] = desired
-
     def setting_changed(self, name, old, new):
         result = super().setting_changed(name, old, new)
 
@@ -615,7 +581,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         for basic_group_num in range(1, 4):
             setting_name = f'basicgroup{basic_group_num}'
             if setting_name not in self.dbus_settings:
-                self.add_settings({setting_name: [f'/EnabledBasicGroup{basic_group_num}', 1, 0, 1]})
+                self.add_settings({setting_name: [f'/EnabledBasicGroup{basic_group_num}', 1, 0, 1] })
                 self.add_dbus_setting(setting_name, f'/EnabledBasicGroup{basic_group_num}')
 
         self.update_basic_group_subdevices()
