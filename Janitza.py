@@ -356,6 +356,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         self.basic_group_num = basic_group_num
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num} __init__')
         self.productname = f'Janitza UMG 801 Basic Group {basic_group_num}'
+        self.info['/Name'] = f'Janitza UMG 801 Basic Group {basic_group_num}'
                 
         try:
             self.info_regs = [
@@ -455,10 +456,14 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}"
 
     def get_name(self):
-        # # Try to get the basic group name from info
-        # if '/Name' in self.info:
-        #     return self.info['/Name']
+        if '/Name' in self.info:
+            return self.info['/Name']
         return f"Basic Group {self.basic_group_num}"
+
+    def device_init_late(self):
+        super().device_init_late()
+        self.add_settings({'name': ['/Name', self.info.get('/Name', ''), 0, 0]})
+        self.add_dbus_setting('name', '/Name')
 
 class JANITZA_UMG_801(device.EnergyMeter):
     vendor_id = 'ja'
