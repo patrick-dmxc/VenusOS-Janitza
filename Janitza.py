@@ -464,6 +464,11 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             self.add_settings({'customname': ['/CustomName', '', 0, 0]})
             self.add_dbus_setting('customname', '/CustomName')
 
+        if self.position is None and self.role in ('pvinverter', 'evcharger', 'heatpump', 'acload', 'genset'):
+            if 'position' not in self.dbus_settings:
+                self.add_settings({'position': ['/Position', 0, 0, 2]})
+                self.add_dbus_setting('position', '/Position')
+
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
         self.settings['customname'] = f'Janitza UMG 801 Basic Group {self.basic_group_num}'
 
