@@ -574,6 +574,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         return result
 
     def device_init_late(self):
+        super().device_init_late()
         log.info(f'Janitza UMG 801 device init late')
 
         for basic_group_num in range(1, 4):
