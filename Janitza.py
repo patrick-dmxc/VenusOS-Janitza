@@ -580,6 +580,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         return result
 
     def device_init_late(self):
+        super().device_init_late()
         log.info(f'Janitza UMG 801 device init late')
         if self.dbus is None or '/CustomName' not in self.dbus:
             device.CustomName.device_init_late(self)
@@ -596,7 +597,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         self.update_basic_group_subdevices()
 
         self.settings['customname'] = 'Janitza UMG 801'
-        super().device_init_late()
 
 models96RM = {
     5222036: {
