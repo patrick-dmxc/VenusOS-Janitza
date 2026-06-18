@@ -364,7 +364,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
 
 
     def phase_regs(self, n):
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} register Phase {n}')
+        basic_group_num = self.basic_group_num
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n}')
         s = 0x0002 * (n - 1)
 
         pRegs = None
@@ -375,17 +376,20 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         energyFwdAddress=19054 + s
         energyRevAddress=19070 + s
         powerFactorAddress=19044 + s
-        if(self.basic_group_num > 0):
-            log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} register Phase {n} with offset')
-            baseOffset=((self.basic_group_num + 1)*100) + s
-            currentAddress=19000 + ((self.basic_group_num + 1)*100) + s
-            powerAddress=19000 + ((self.basic_group_num + 1)*100) + 8 + s
-            energyFwdAddress=19000 + ((self.basic_group_num + 1)*100) + 38 + s
-            energyRevAddress=19000 + ((self.basic_group_num + 1)*100) + 54 + s
-            powerFactorAddress=19000 + ((self.basic_group_num + 1)*100) + 32 + s
+        if(basic_group_num > 0):
+            baseOffset=((basic_group_num + 1)*100) + s
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with offset {baseOffset}')
+            currentAddress=19000 + ((basic_group_num + 1)*100) + s
+            powerAddress=19000 + ((basic_group_num + 1)*100) + 8 + s
+            energyFwdAddress=19000 + ((basic_group_num + 1)*100) + 38 + s
+            energyRevAddress=19000 + ((basic_group_num + 1)*100) + 54 + s
+            powerFactorAddress=19000 + ((basic_group_num + 1)*100) + 32 + s
+        else:
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with no offset')
+            
         
         
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} Phase {n} Addresses: Voltage {voltageAddress}, VoltageLineToLine {voltageLineToLineAddress}, Current {currentAddress}, Power {powerAddress}, EnergyFwd {energyFwdAddress}, EnergyRev {energyRevAddress}, PowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Phase {n} Addresses: Voltage {voltageAddress}, VoltageLineToLine {voltageLineToLineAddress}, Current {currentAddress}, Power {powerAddress}, EnergyFwd {energyFwdAddress}, EnergyRev {energyRevAddress}, PowerFactor {powerFactorAddress}')
         try:
             pRegs = [
                 Reg_f32b(voltageAddress,           '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
@@ -397,8 +401,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
                 Reg_f32b(powerFactorAddress,       '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
-            log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} register Phase {n} exception while Register f32')
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} register Phase {n} done')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} exception while Register f32')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} done')
         return pRegs
 
 
