@@ -557,6 +557,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         return f"{self.vendor_id}_{self.info['/Serial']}"
 
     def update_basic_group_subdevices(self):
+        log.info(f'Janitza UMG 801  update_basic_group_subdevices')
         for basic_group_num in range(1, 4):
             setting_name = f'basicgroup{basic_group_num}'
             enabled = bool(self.settings[setting_name])
@@ -580,7 +581,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         return result
 
     def device_init_late(self):
-        super().device_init_late()
         log.info(f'Janitza UMG 801 device init late')
         if self.dbus is None or '/CustomName' not in self.dbus:
             device.CustomName.device_init_late(self)
