@@ -463,7 +463,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice, device.CustomName):
         self.add_settings({'customname': ['/CustomName', f'Janitza UMG 801 Basic Group {self.basic_group_num}', 0, 0]})
         self.add_dbus_setting('customname', '/CustomName')
 
-class JANITZA_UMG_801(device.EnergyMeter):
+class JANITZA_UMG_801(device.EnergyMeter, device.CustomName):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
@@ -540,6 +540,12 @@ class JANITZA_UMG_801(device.EnergyMeter):
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
+    
+    def device_init_late(self):
+        super().device_init_late()
+        log.info(f'Janitza UMG 801 device init late')
+        self.add_settings({'customname': ['/CustomName', 'Janitza UMG 801', 0, 0]})
+        self.add_dbus_setting('customname', '/CustomName')
 
 models96RM = {
     5222036: {
