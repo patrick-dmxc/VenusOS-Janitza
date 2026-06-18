@@ -467,7 +467,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
         self.settings['customname'] = f'Janitza UMG 801 Basic Group {self.basic_group_num}'
 
-class JANITZA_UMG_801(device.CustomName, device.BaseDevice):
+class JANITZA_UMG_801(device.BaseDevice):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
@@ -545,15 +545,15 @@ class JANITZA_UMG_801(device.CustomName, device.BaseDevice):
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
     
-    def device_init_late(self):
-        if self.dbus is None or '/CustomName' not in self.dbus:
-            device.CustomName.device_init_late(self)
-        elif 'customname' not in self.dbus_settings:
-            self.add_settings({'customname': ['/CustomName', '', 0, 0]})
-            self.add_dbus_setting('customname', '/CustomName')
+    # def device_init_late(self):
+    #     if self.dbus is None or '/CustomName' not in self.dbus:
+    #         device.CustomName.device_init_late(self)
+    #     elif 'customname' not in self.dbus_settings:
+    #         self.add_settings({'customname': ['/CustomName', '', 0, 0]})
+    #         self.add_dbus_setting('customname', '/CustomName')
 
-        log.info(f'Janitza UMG 801 device init late')
-        self.settings['customname'] = 'Janitza UMG 801'
+    #     log.info(f'Janitza UMG 801 device init late')
+    #     self.settings['customname'] = 'Janitza UMG 801'
 
 models96RM = {
     5222036: {
