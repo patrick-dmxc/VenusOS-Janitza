@@ -377,7 +377,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         energyRevAddress=19070 + s
         powerFactorAddress=19044 + s
         if(basic_group_num > 1):
-            baseOffset=((basic_group_num + 1)*100) + s
+            baseOffset=(basic_group_num*100) + s
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with offset {baseOffset}')
             currentAddress=19000 + baseOffset
             powerAddress=19000 + baseOffset + 8
@@ -389,7 +389,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
             
         
         
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Phase {n} Addresses: Voltage {voltageAddress}, VoltageLineToLine {voltageLineToLineAddress}, Current {currentAddress}, Power {powerAddress}, EnergyFwd {energyFwdAddress}, EnergyRev {energyRevAddress}, PowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
             pRegs = [
                 Reg_f32b(voltageAddress,           '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
@@ -420,7 +420,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         powerFactorAddress=19076
         if(basic_group_num > 1):
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with offset')
-            baseOffset=((basic_group_num + 1)*100)
+            baseOffset=(basic_group_num*100)
             powerAddress=19000 + baseOffset + 14
             currentAddress=19000 + baseOffset + 6
             energyFwdAddress=19000 + baseOffset + 44
