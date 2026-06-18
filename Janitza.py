@@ -531,31 +531,50 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
 
         log.info('Janitza set Registers')
         self.data_regs = gRegs
-        
-        # Create SubDevices for each Basic Groub
-        log.info('Janitza add Basic Groubs')
-        try:
-            for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
-                try:
-                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
-                    self.subdevices.append(subdevice)
-                    log.info(f'Janitza added Basic Groubs {basic_group_num} as subdevice')
-                except Exception as e:
-                    log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
-        except Exception as e:
-            log.info(f'Janitza exception scanning Basic Groubs: {e}')
-        
         log.info('Janitza UMG 801 device init done')
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
-    
+
+    def update_basic_group_subdevices(self):
+        for basic_group_num in range(1, 4):
+            setting_name = f'basicgroup{basic_group_num}'
+            enabled = bool(self.settings[setting_name])
+            subdevice = next((s for s in self.subdevices if s.basic_group_num == basic_group_num), None)
+
+            if enabled and subdevice is None:
+                subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
+                self.subdevices.append(subdevice)
+                subdevice.init()
+                log.info(f'Janitza added Basic Groub {basic_group_num} as subdevice')
+            elif not enabled and subdevice is not None:
+                subdevice.destroy()
+                self.subdevices.remove(subdevice)
+                log.info(f'Janitza removed Basic Groub {basic_group_num} subdevice')
+
+    def setting_changed(self, name, old, new):
+        result = super().setting_changed(name, old, new)
+
+        if name.startswith('basicgroup'):
+            self.update_basic_group_subdevices()
+            return True
+
+        return result
+
     def device_init_late(self):
         if self.dbus is None or '/CustomName' not in self.dbus:
             device.CustomName.device_init_late(self)
         elif 'customname' not in self.dbus_settings:
             self.add_settings({'customname': ['/CustomName', '', 0, 0]})
             self.add_dbus_setting('customname', '/CustomName')
+
+        for basic_group_num in range(1, 4):
+            setting_name = f'basicgroup{basic_group_num}'
+            if setting_name not in self.dbus_settings:
+                self.add_settings({setting_name: [f'/EnabledBasicGroup{basic_group_num}', 1, 0, 1]})
+                self.add_dbus_setting(setting_name, f'/EnabledBasicGroup{basic_group_num}')
+
+        self.update_basic_group_subdevices()
 
         log.info(f'Janitza UMG 801 device init late')
         self.settings['customname'] = 'Janitza UMG 801'
