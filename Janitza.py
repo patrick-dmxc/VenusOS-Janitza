@@ -334,7 +334,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
 
-class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
+class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice, device.CustomName):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
