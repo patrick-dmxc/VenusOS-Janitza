@@ -334,7 +334,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
 
-class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice, device.CustomName, device.EnergyMeter):
+class JANITZA_UMG_801_BASIC_GROUP(device.EnergyMeter, device.SubDevice, device.CustomName):
     vendor_id = 'ja'
     vendor_name = 'Janitza'
     productid = 0xFFFF
@@ -343,9 +343,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice, device.CustomName, device.En
     age_limit_fast = 0
     refresh_time = 200
     nr_phases = 3
-    role_names = ['grid', 'pvinverter', 'genset', 'acload', 'evcharger',
-                  'heatpump']
-    allowed_roles = role_names
+    # role_names = ['grid', 'pvinverter', 'genset', 'acload', 'evcharger',
+    #               'heatpump']
+    # allowed_roles = role_names
     # default_role = 'grid'
     # default_instance = 41
     # position = None
