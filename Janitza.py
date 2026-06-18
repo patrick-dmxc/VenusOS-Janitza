@@ -438,9 +438,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}"
 
     def get_name(self):
-        # Try to get the basic group name from info
-        if '/Name' in self.info:
-            return self.info['/Name']
+        # # Try to get the basic group name from info
+        # if '/Name' in self.info:
+        #     return self.info['/Name']
         return f"Basic Group {self.basic_group_num}"
 
 class JANITZA_UMG_801(device.EnergyMeter):
