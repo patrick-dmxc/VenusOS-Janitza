@@ -435,7 +435,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.SubDevice):
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init done')
 
     def get_ident(self):
-        return f"{self.parent.vendor_id}_{self.parent.info['/Serial']}_BG{self.basic_group_num:02d}"
+        return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}"
 
     def get_name(self):
         # Try to get the basic group name from info
