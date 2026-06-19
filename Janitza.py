@@ -619,41 +619,35 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         self.data_regs = gRegs
                 
         # Create SubDevices for each Basic Group (enabled status set in device_init_late)
+        self._subdevice_blueprints = {}  # key -> dict of constructor kwargs
         log.info('Janitza add Basic Groups')
         try:
-            for basic_group_num in range(1, 4):  # Basic Groups 1-3                
+            for basic_group_num in range(1, 4):  # Basic Groups 1-3
                 try:
                     probe_result = self.probe_groups(basic_group_num)
-                    
-                    # Set L4 configuration based on probe result
+
+                    # Build blueprint list based on probe result
+                    blueprints = []
                     if probe_result['l4_state'] == 'neutral':
-                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=True, isL4SinglePhase=False)
-                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 Neutral Measurement')
-                        self.subdevices.append(subdevice)
-                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice')
+                        blueprints = [dict(basic_group_num=basic_group_num, isL4MeasureNeutral=True,  isL4SinglePhase=False)]
                     elif probe_result['l4_state'] == 'separate_single_phase':
-                        subdeviceL1L2L3 = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num , isL4MeasureNeutral=False, isL4SinglePhase=False)
-                        subdeviceL4 =     JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num , isL4MeasureNeutral=False, isL4SinglePhase=True)
-                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured three phase L1-L3 and separate single phase L4 measurement')
-                        self.subdevices.append(subdeviceL1L2L3)
-                        self.subdevices.append(subdeviceL4)
-                        log.info(f'Janitza added Basic Group {basic_group_num} as two subdevices for three phase L1-L3 and separate single phase L4 measurement')
-                    elif probe_result['l4_state'] == 'no_l4_support':
-                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False)
-                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for three phase L1-L3 measurement with no L4 support')
+                        blueprints = [dict(basic_group_num=basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False),
+                                      dict(basic_group_num=basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=True)]
+                    else:  # no_l4_support or partial_or_unknown
+                        blueprints = [dict(basic_group_num=basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False)]
+
+                    for bp in blueprints:
+                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, **bp)
+                        key = self._subdevice_setting_key(subdevice)
+                        self._subdevice_blueprints[key] = bp
                         self.subdevices.append(subdevice)
-                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with no L4 support')
-                    else:
-                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} has unknown or partial L4 support, adding as three phase L1-L3 measurement without L4 support')
-                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False)
-                        self.subdevices.append(subdevice)
-                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with unknown or partial L4 support')
-                    
+                        log.info(f'Janitza added Basic Group {basic_group_num} subdevice {key}')
+
                 except Exception as e:
                     log.error(f'Janitza exception adding Basic Groups {basic_group_num}: {e}')
         except Exception as e:
             log.error(f'Janitza exception scanning Basic Groups: {e}')
-        
+
         log.info('Janitza UMG 801 device init done')
 
     def probe_groups(self, group_num):
@@ -738,22 +732,35 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             path += 'L4'
         return path
 
-    def update_basic_group_subdevices(self, init_new_subdevices=False):
+    def update_basic_group_subdevices(self):
         log.info('Janitza UMG 801 update_basic_group_subdevices')
-        for subdevice in list(self.subdevices):
-            setting_name = self._subdevice_setting_key(subdevice)
+        blueprints = getattr(self, '_subdevice_blueprints', {})
+
+        for key, bp in blueprints.items():
             try:
-                enabled = bool(self.settings[setting_name])
+                enabled = bool(self.settings[key])
             except Exception:
                 enabled = True
 
-            if not enabled:
+            existing = next((s for s in self.subdevices
+                             if self._subdevice_setting_key(s) == key), None)
+
+            if enabled and existing is None:
                 try:
-                    subdevice.destroy()
+                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, **bp)
+                    self.subdevices.append(subdevice)
+                    subdevice.init()
+                    log.info(f'Janitza re-added subdevice {key}')
                 except Exception as e:
-                    log.error(f'Janitza exception destroying subdevice {setting_name}: {e}')
-                self.subdevices.remove(subdevice)
-                log.info(f'Janitza removed subdevice {setting_name}')
+                    log.error(f'Janitza exception re-adding subdevice {key}: {e}')
+
+            elif not enabled and existing is not None:
+                try:
+                    existing.destroy()
+                except Exception as e:
+                    log.error(f'Janitza exception destroying subdevice {key}: {e}')
+                self.subdevices.remove(existing)
+                log.info(f'Janitza removed subdevice {key}')
 
     def setting_changed(self, name, old, new):
         result = super().setting_changed(name, old, new)
