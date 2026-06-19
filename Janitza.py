@@ -379,6 +379,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     def phase_regs(self, n):
         basic_group_num = self.basic_group_num
         l4NameFlag = ' L4' if self.isL4SinglePhase is True else ''
+        if self.isL4SinglePhase is True:
+            n = self.phaseSetting
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n}')
         s = 0x0002 * (n - 1)
 
@@ -410,7 +412,6 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             energyFwdAddress=baseAddress + baseOffset + 10
             energyRevAddress=baseAddress + baseOffset + 12
             powerFactorAddress=baseAddress + baseOffset + 6
-            n = self.phaseSetting
             
         
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
@@ -543,6 +544,17 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 phase = 1
             self.phaseSetting = phase
             log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 PhaseSetting changed from {old} to {phase}')
+            # Remove old phase DBus paths before rebuilding with new phase
+            try:
+                old_phase = int(old)
+                if old_phase in (1, 2, 3) and old_phase != phase:
+                    for suffix in ('Voltage', 'VoltageLineToLine', 'Current', 'Power',
+                                   'Energy/Forward', 'Energy/Reverse', 'PowerFactor'):
+                        path = f'/Ac/L{old_phase}/{suffix}'
+                        if path in self.dbus:
+                            del self.dbus[path]
+            except Exception:
+                pass
             self.device_init()
             self.init_data_regs()
 
@@ -608,10 +620,10 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         log.info('Janitza set Registers')
         self.data_regs = gRegs
                 
-        # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
-        log.info('Janitza add Basic Groubs')
+        # Create SubDevices for each Basic Group (enabled status set in device_init_late)
+        log.info('Janitza add Basic Groups')
         try:
-            for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
+            for basic_group_num in range(1, 4):  # Basic Groups 1-3                
                 try:
                     probe_result = self.probe_groups(basic_group_num)
                     
@@ -640,9 +652,9 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                         log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with unknown or partial L4 support')
                     
                 except Exception as e:
-                    log.error(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
+                    log.error(f'Janitza exception adding Basic Groups {basic_group_num}: {e}')
         except Exception as e:
-            log.error(f'Janitza exception scanning Basic Groubs: {e}')
+            log.error(f'Janitza exception scanning Basic Groups: {e}')
         
         log.info('Janitza UMG 801 device init done')
 
@@ -727,23 +739,23 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 try:
                     subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
                     self.subdevices.append(subdevice)
-                    log.info(f'Janitza added Basic Groub {basic_group_num} as subdevice')
+                    log.info(f'Janitza added Basic Group {basic_group_num} as subdevice')
 
                     # During runtime setting changes we must initialize newly created subdevices immediately.
                     if init_new_subdevices:
                         subdevice.init()
-                        log.info(f'Janitza initialized Basic Groub {basic_group_num}')
+                        log.info(f'Janitza initialized Basic Group {basic_group_num}')
                 except Exception as e:
-                    log.error(f'Janitza exception adding Basic Groub {basic_group_num}: {e}')
+                    log.error(f'Janitza exception adding Basic Group {basic_group_num}: {e}')
 
             elif not enabled and subdevice is not None:
                 try:
                     subdevice.destroy()
                 except Exception as e:
-                    log.error(f'Janitza exception destroying Basic Groub {basic_group_num}: {e}')
+                    log.error(f'Janitza exception destroying Basic Group {basic_group_num}: {e}')
 
                 self.subdevices = [s for s in self.subdevices if s.basic_group_num != basic_group_num]
-                log.info(f'Janitza removed Basic Groub {basic_group_num} as subdevice')
+                log.info(f'Janitza removed Basic Group {basic_group_num} as subdevice')
 
     def setting_changed(self, name, old, new):
         result = super().setting_changed(name, old, new)
