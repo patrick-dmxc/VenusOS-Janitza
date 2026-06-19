@@ -544,15 +544,14 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 phase = 1
             self.phaseSetting = phase
             log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 PhaseSetting changed from {old} to {phase}')
-            # Remove old phase DBus paths before rebuilding with new phase
+            # Delete all /Ac/Lx paths unconditionally — at startup the registered phase
+            # may differ from the persisted 'old' value (settings not yet loaded during
+            # first device_init), so we can't rely on 'old' to know what's registered.
             try:
-                old_phase = int(old)
-                if old_phase in (1, 2, 3) and old_phase != phase:
-                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleting /Ac/Lx from dbus')
-                    self.dbus.del_tree(f'/Ac')
-                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleted /Ac/Lx from dbus')
+                self.dbus.del_tree('/Ac')
+                log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleted /Ac from dbus')
             except Exception as e:
-                log.error(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 exception deleting old phase paths: {e}')
+                log.error(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 exception deleting /Ac: {e}')
             self.device_init()
             self.init_data_regs()
 
