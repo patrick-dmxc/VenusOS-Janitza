@@ -459,9 +459,13 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             if(basic_group_num ==0):
                 offset=0
             nCurrentAddr=19044 + offset
-            gRegs += [
-                Reg_f32b(nCurrentAddr, '/Ac/N/Current', 1, '%.3f A'),
-            ]
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} L4 Current Register Address {nCurrentAddr}')
+            try:
+                gRegs += [
+                    Reg_f32b(nCurrentAddr, '/Ac/N/Current', 1, '%.3f A'),
+                ]
+            except:
+                log.info(f'Janitza UMG 801 Basic Group {basic_group_num} exception while Register f32 for L4 Current')
 
         self.data_regs = gRegs
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device init done')
@@ -548,10 +552,26 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         try:
             for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
                 try:
-                    self.probe_groups(basic_group_num)
+                    probe_result = self.probe_groups(basic_group_num)
+                    
+                    # Set L4 configuration based on probe result
+                    #if probe_result['l4_state'] == 'neutral':
                     subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
+                    subdevice.isL4MeasureNeutral = True
+                    subdevice.isL4SinglePhase = False
+                    log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 Neutral Measurement')
                     self.subdevices.append(subdevice)
                     log.info(f'Janitza added Basic Groubs {basic_group_num} as subdevice')
+                    # elif probe_result['l4_state'] == 'separate_single_phase':
+                    #     subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
+                    #     subdevice.isL4MeasureNeutral = False
+                    #     subdevice.isL4SinglePhase = False
+                    #     log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 as separate Single-Phase')
+                    # elif probe_result['l4_state'] == 'no_l4_support':
+                    #     subdevice.isL4MeasureNeutral = False
+                    #     subdevice.isL4SinglePhase = False
+                    #     log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured with no L4 support')
+                    
                 except Exception as e:
                     log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
         except Exception as e:
@@ -609,10 +629,20 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                     offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
         if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
             log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
+            l4_state = 'no_l4_support'
         if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
             log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as N', group_idx + 1)
+            l4_state = 'neutral'
         if(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
             log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as separate Single-Phase', group_idx + 1)
+            l4_state = 'separate_single_phase'
+        else:
+            l4_state = 'partial_or_unknown'
+
+        return {
+            'group_num': group_num,
+            'l4_state': l4_state,
+        }
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
