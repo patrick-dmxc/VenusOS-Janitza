@@ -532,7 +532,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         log.info('Janitza set Registers')
         self.data_regs = gRegs
         
-        G1L4W = Reg_f32b(21500)
+        G1L4W = Reg_f32b(19026)
         G2L4W = Reg_f32b(21524)
         log.info(f'Janitza UMG 801 device init - check for 4th line with register {G1L4W} and {G2L4W}')
         
