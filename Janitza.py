@@ -477,17 +477,20 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             for n in range(1, phases + 1):
                 gRegs += self.phase_regs(n)
         else:
-            try:
-                selectedPhase = self.phaseSetting
-                if 'phasesetting' in self.settings:
-                    selectedPhase = int(self.settings['phasesetting'])
-                if selectedPhase not in (1, 2, 3):
-                    selectedPhase = 1
-                self.phaseSetting = selectedPhase
-                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
-                gRegs += self.phase_regs(4)
-            except:
-                log.error(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while setting PhaseSetting for single-phase L4 mapping')
+            selectedPhase = self.phaseSetting
+            settings = getattr(self, 'settings', None)
+            if settings is not None and 'phasesetting' in settings:
+                try:
+                    selectedPhase = int(settings['phasesetting'])
+                except Exception:
+                    selectedPhase = self.phaseSetting
+
+            if selectedPhase not in (1, 2, 3):
+                selectedPhase = 1
+
+            self.phaseSetting = selectedPhase
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
+            gRegs += self.phase_regs(4)
             
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} adding L4 Current Register for Neutral Measurement')
@@ -526,15 +529,15 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 self.add_settings({'position': ['/Position', 0, 0, 2]})
                 self.add_dbus_setting('position', '/Position')
         
-        if 'phasesetting' not in self.dbus_settings:
+        if 'phasesetting' not in self.dbus_settings and self.isL4SinglePhase is True:
             self.add_settings({'phasesetting': ['/PhaseSetting', self.phaseSetting, 1, 3]})
             self.add_dbus_setting('phasesetting', '/PhaseSetting')
 
     def setting_changed(self, name, old, new):
         if super().setting_changed(name, old, new):
             return True
-
-        if name == 'phasesetting':
+        
+        if name == 'phasesetting' and self.isL4SinglePhase is True:
             try:
                 phase = int(new)
             except Exception:
