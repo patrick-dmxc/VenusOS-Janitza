@@ -540,7 +540,15 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             reg.decode(rr.registers)
             return reg.value
 
-        # Probe optional L4 registers for basic groups 1..3.
+        # Probe optional L1-L4 registers for basic groups 1..3.
+        
+        phase_offset = 2
+        active_power_l1_addr = 19020
+        apparent_power_l1_addr = 19022
+        reactive_power_l1_addr = 19024
+        cos_phi_l1_addr = 19044
+        harmonics_l1_addr = 19116
+
         group_l4_offset = 24
         active_power_l4_addr = 21500
         apparent_power_l4_addr = 21502
@@ -549,14 +557,31 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         harmonics_l4_addr = 21522
 
         for group_idx in range(0, 3):
-            offset = group_l4_offset * group_idx
-            active_power_l4 = _safe_read_f32(active_power_l4_addr + offset)
-            apparent_power_l4 = _safe_read_f32(apparent_power_l4_addr + offset)
-            reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset)
-            cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset)
-            harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset)
+            offset_l1_l2_l3 = 100 * (group_idx)
+            if(group_idx == 0):
+                offset_l1_l2_l3 = 0
+            if(group_idx >= 1):
+                offset_l1_l2_l3 = 88 +(100 * (group_idx))
+
+            for phase_idx in range(0, 3):
+                offset_phase = phase_offset * phase_idx
+                active_power = _safe_read_f32(active_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+                apparent_power = _safe_read_f32(apparent_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+                reactive_power = _safe_read_f32(reactive_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+                cos_phi = _safe_read_f32(cos_phi_l1_addr + offset_l1_l2_l3 + offset_phase)
+                harmonics = _safe_read_f32(harmonics_l1_addr + offset_l1_l2_l3 + offset_phase)
+                log.info('Janitza UMG 801 probe Basic Group %d Phase %d offset %d: activePowerL%d=%s, apparentPowerL%d=%s, reactivePowerL%d=%s, cosPhiL%d=%s, harmonicsL%d=%s',
+                         group_idx + 1, phase_idx + 1, offset_l1_l2_l3 + offset_phase,
+                         phase_idx + 1, active_power, phase_idx + 1, apparent_power, phase_idx + 1, reactive_power, phase_idx + 1, cos_phi, phase_idx + 1, harmonics)
+
+            offset_l4 = group_l4_offset * group_idx
+            active_power_l4 = _safe_read_f32(active_power_l4_addr + offset_l4)
+            apparent_power_l4 = _safe_read_f32(apparent_power_l4_addr + offset_l4)
+            reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset_l4)
+            cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset_l4)
+            harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset_l4)
             log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
-                     offset, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
+                     offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
             if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
                 log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
             if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
