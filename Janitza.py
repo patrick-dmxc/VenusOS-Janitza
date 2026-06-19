@@ -540,22 +540,23 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             reg.decode(rr.registers)
             return reg.value
 
-        gRegs += self.phase_regs(n)
-        groupAddressL4Offset=24
-        activePowerAddressL4= 21500
-        apperentPowerAddressL4= 21506
-        reactivePowerAddressL4= 21506
-        cosPhiAddressL4= 21506
-        harmonicsAddressL4= 21506
-        for n in range(0, 3):
-            offset=groupAddressL4Offset * (n + 1)
-            activePowerL4 = _safe_read_f32(activePowerAddressL4 + offset)
-            apperentPowerL4 = _safe_read_f32(apperentPowerAddressL4 + offset)
-            reactivePowerL4 = _safe_read_f32(reactivePowerAddressL4 + offset)
-            cosPhiL4 = _safe_read_f32(cosPhiAddressL4 + offset)
-            harmonicsL4 = _safe_read_f32(harmonicsAddressL4 + offset)
-            log.info('Janitza UMG 801 device init - check for 4th line with offset %d: activePowerL4=%s, apperentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
-                     offset, activePowerL4, apperentPowerL4, reactivePowerL4, cosPhiL4, harmonicsL4)
+        # Probe optional L4 registers for basic groups 1..3.
+        group_l4_offset = 24
+        active_power_l4_addr = 21500
+        apparent_power_l4_addr = 21502
+        reactive_power_l4_addr = 21504
+        cos_phi_l4_addr = 21506
+        harmonics_l4_addr = 21522
+
+        for group_idx in range(0, 3):
+            offset = group_l4_offset * group_idx
+            active_power_l4 = _safe_read_f32(active_power_l4_addr + offset)
+            apparent_power_l4 = _safe_read_f32(apparent_power_l4_addr + offset)
+            reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset)
+            cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset)
+            harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset)
+            log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
+                     offset, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
         
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
