@@ -540,10 +540,22 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             reg.decode(rr.registers)
             return reg.value
 
-        g1_l4_w = _safe_read_f32(21500)
-        g2_l4_w = _safe_read_f32(21524)
-        log.info('Janitza UMG 801 device init - check for 4th line with register 21500=%s and 21524=%s',
-                 g1_l4_w, g2_l4_w)
+        gRegs += self.phase_regs(n)
+        groupAddressL4Offset=24
+        activePowerAddressL4= 21500
+        apperentPowerAddressL4= 21506
+        reactivePowerAddressL4= 21506
+        cosPhiAddressL4= 21506
+        harmonicsAddressL4= 21506
+        for n in range(0, 3):
+            offset=groupAddressL4Offset * (n + 1)
+            activePowerL4 = _safe_read_f32(activePowerAddressL4 + offset)
+            apperentPowerL4 = _safe_read_f32(apperentPowerAddressL4 + offset)
+            reactivePowerL4 = _safe_read_f32(reactivePowerAddressL4 + offset)
+            cosPhiL4 = _safe_read_f32(cosPhiAddressL4 + offset)
+            harmonicsL4 = _safe_read_f32(harmonicsAddressL4 + offset)
+            log.info('Janitza UMG 801 device init - check for 4th line with offset %d: activePowerL4=%s, apperentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
+                     offset, activePowerL4, apperentPowerL4, reactivePowerL4, cosPhiL4, harmonicsL4)
         
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
