@@ -486,14 +486,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     def __init__(self, *args):
         super(JANITZA_UMG_801, self).__init__(*args)
         log.info('Janitza Probing')
-        self._debug_regs = {
-            21500: Reg_f32b(21500),
-            21524: Reg_f32b(21524),
-        }
-        self._debug_reg_enabled = {
-            21500: True,
-            21524: True,
-        }
         try:
             self.info_regs = [
                 Reg_u64b(4164,     '/HardwareVersion'),
@@ -540,6 +532,9 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         log.info('Janitza set Registers')
         self.data_regs = gRegs
         
+        G1L4W = Reg_f32b(21500)
+        G2L4W = Reg_f32b(21524)
+        log.info(f'Janitza UMG 801 device init - check for 4th line with register {G1L4W} and {G2L4W}')
         
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
@@ -555,31 +550,6 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             log.info(f'Janitza exception scanning Basic Groubs: {e}')
         
         log.info('Janitza UMG 801 device init done')
-
-    def device_update(self):
-        if not self.enabled:
-            return
-
-        super().device_update()
-
-        debug_values = {}
-        for addr, reg in self._debug_regs.items():
-            if not self._debug_reg_enabled[addr]:
-                continue
-
-            rr = self.read_modbus(reg.base, reg.count, reg.access)
-            if rr.isError():
-                self._debug_reg_enabled[addr] = False
-                log.info('Janitza UMG 801 disabling debug register %d after read error: %s',
-                         addr, rr)
-                continue
-
-            reg.decode(rr.registers)
-            debug_values[addr] = reg.value
-
-        if debug_values:
-            log.info('Janitza UMG 801 debug registers: 21500=%s 21524=%s',
-                     debug_values.get(21500), debug_values.get(21524))
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
