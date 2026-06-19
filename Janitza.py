@@ -342,7 +342,6 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     min_timeout = 0.5
     age_limit_fast = 0
     refresh_time = 200
-    nr_phases = 3
     role_names = ['grid', 'pvinverter', 'genset', 'acload', 'evcharger',
                   'heatpump']
     allowed_roles = role_names
@@ -353,7 +352,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
 
     def __init__(self, parent, basic_group_num, isL4MeasureNeutral = False, isL4SinglePhase = False, phaseSetting = None):
         l4NameFlag = ' L4' if isL4SinglePhase is True else ''
-        super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}{l4NameFlag}')
+        super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}{l4NameFlag}')        
+        nr_phases = 3 if isL4SinglePhase is False else 1
         self.basic_group_num = basic_group_num
         self.enabled = True        
         self.isL4MeasureNeutral = isL4MeasureNeutral
@@ -477,14 +477,17 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             for n in range(1, phases + 1):
                 gRegs += self.phase_regs(n)
         else:
-            selectedPhase = self.phaseSetting
-            if 'phasesetting' in self.settings:
-                selectedPhase = int(self.settings['phasesetting'])
-            if selectedPhase not in (1, 2, 3):
-                selectedPhase = 1
-            self.phaseSetting = selectedPhase
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
-            gRegs += self.phase_regs(4)
+            try:
+                selectedPhase = self.phaseSetting
+                if 'phasesetting' in self.settings:
+                    selectedPhase = int(self.settings['phasesetting'])
+                if selectedPhase not in (1, 2, 3):
+                    selectedPhase = 1
+                self.phaseSetting = selectedPhase
+                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
+                gRegs += self.phase_regs(4)
+            except:
+                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while setting PhaseSetting for single-phase L4 mapping')
             
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} adding L4 Current Register for Neutral Measurement')
