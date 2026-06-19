@@ -526,10 +526,35 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 self.add_settings({'position': ['/Position', 0, 0, 2]})
                 self.add_dbus_setting('position', '/Position')
         
-        if self.isL4SinglePhase is True:            
-            if 'phasesetting' not in self.dbus_settings:
-                self.add_settings({'phasesetting': ['/PhaseSetting', self.phaseSetting, 1, 3]})
-                self.add_dbus_setting('phasesetting', '/PhaseSetting')
+        if 'phasesetting' not in self.dbus_settings:
+            self.add_settings({'phasesetting': ['/PhaseSetting', self.phaseSetting, 1, 3]})
+            self.add_dbus_setting('phasesetting', '/PhaseSetting')
+
+    def setting_changed(self, name, old, new):
+        if super().setting_changed(name, old, new):
+            return True
+
+        if name == 'phasesetting':
+            try:
+                phase = int(new)
+            except Exception:
+                phase = 1
+
+            if phase not in (1, 2, 3):
+                phase = 1
+
+            if phase != new:
+                self.settings['phasesetting'] = phase
+
+            self.phaseSetting = phase
+
+            if self.isL4SinglePhase:
+                # Rebuild data regs so the selected source phase mapping is applied.
+                self.sched_reinit()
+
+            return True
+
+        return False
 
 class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     vendor_id = 'ja'
