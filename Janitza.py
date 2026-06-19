@@ -486,6 +486,8 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     def __init__(self, *args):
         super(JANITZA_UMG_801, self).__init__(*args)
         log.info('Janitza Probing')
+        self._log_reg_21500 = Reg_f32b(21500)
+        self._log_reg_21524 = Reg_f32b(21524)
         try:
             self.info_regs = [
                 Reg_u64b(4164,     '/HardwareVersion'),
@@ -532,6 +534,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         log.info('Janitza set Registers')
         self.data_regs = gRegs
         
+        
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
         try:
@@ -546,6 +549,20 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             log.info(f'Janitza exception scanning Basic Groubs: {e}')
         
         log.info('Janitza UMG 801 device init done')
+
+    def device_update(self):
+        if not self.enabled:
+            return
+
+        super().device_update()
+
+        try:
+            reg_21500 = self.read_register(self._log_reg_21500)
+            reg_21524 = self.read_register(self._log_reg_21524)
+            log.info('Janitza UMG 801 debug registers:\nG1 L4 W 21500=%s\nG1 L4 W 21524=%s',
+                     reg_21500, reg_21524)
+        except Exception as e:
+            log.info('Janitza UMG 801 failed reading debug registers 21500/21524: %s', e)
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
