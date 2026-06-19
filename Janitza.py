@@ -349,6 +349,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     default_role = 'grid'
     default_instance = 41
     position = None
+    isL4MeasureNeutral = True
+    isL4SinglePhase = False
 
 
     def __init__(self, parent, basic_group_num):
@@ -394,9 +396,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             energyRevAddress=19000 + baseOffset + 54
             powerFactorAddress=19000 + baseOffset + 32
         else:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with no offset')
-            
-        
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with no offset')           
+
         
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
@@ -451,6 +452,16 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         
         for n in range(1, phases + 1):
             gRegs += self.phase_regs(n)
+            
+        if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} adding L4 Current Register for Neutral Measurement')
+            offset=88+(basic_group_num-1)*100
+            if(basic_group_num ==0):
+                offset=0
+            nCurrentAddr=19044 + offset
+            gRegs += [
+                Reg_f32b(nCurrentAddr, '/Ac/N/Current', 1, '%.3f A'),
+            ]
 
         self.data_regs = gRegs
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device init done')
@@ -531,7 +542,24 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
 
         log.info('Janitza set Registers')
         self.data_regs = gRegs
+                
+        # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
+        log.info('Janitza add Basic Groubs')
+        try:
+            for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
+                try:
+                    self.probe_groups(basic_group_num)
+                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
+                    self.subdevices.append(subdevice)
+                    log.info(f'Janitza added Basic Groubs {basic_group_num} as subdevice')
+                except Exception as e:
+                    log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
+        except Exception as e:
+            log.info(f'Janitza exception scanning Basic Groubs: {e}')
+        
+        log.info('Janitza UMG 801 device init done')
 
+    def probe_groups(self, group_num):
         def _safe_read_f32(addr):
             reg = Reg_f32b(addr)
             rr = self.read_modbus(reg.base, reg.count, reg.access)
@@ -539,9 +567,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 return None
             reg.decode(rr.registers)
             return reg.value
-
-        # Probe optional L1-L4 registers for basic groups 1..3.
-        
+        group_idx = group_num - 1
         phase_offset = 2
         active_power_l1_addr = 19020
         apparent_power_l1_addr = 19022
@@ -555,54 +581,38 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         reactive_power_l4_addr = 21504
         cos_phi_l4_addr = 21506
         harmonics_l4_addr = 21522
-
-        for group_idx in range(0, 3):
-            offset_l1_l2_l3 = 100 * (group_idx)
-            if(group_idx == 0):
-                offset_l1_l2_l3 = 0
-            if(group_idx >= 1):
-                offset_l1_l2_l3 = 88 +(100 * (group_idx))
-
-            for phase_idx in range(0, 3):
-                offset_phase = phase_offset * phase_idx
-                active_power = _safe_read_f32(active_power_l1_addr + offset_l1_l2_l3 + offset_phase)
-                apparent_power = _safe_read_f32(apparent_power_l1_addr + offset_l1_l2_l3 + offset_phase)
-                reactive_power = _safe_read_f32(reactive_power_l1_addr + offset_l1_l2_l3 + offset_phase)
-                cos_phi = _safe_read_f32(cos_phi_l1_addr + offset_l1_l2_l3 + offset_phase)
-                harmonics = _safe_read_f32(harmonics_l1_addr + offset_l1_l2_l3 + offset_phase)
-                log.info('Janitza UMG 801 probe Basic Group %d Phase %d offset %d: activePowerL%d=%s, apparentPowerL%d=%s, reactivePowerL%d=%s, cosPhiL%d=%s, harmonicsL%d=%s',
-                         group_idx + 1, phase_idx + 1, offset_l1_l2_l3 + offset_phase,
-                         phase_idx + 1, active_power, phase_idx + 1, apparent_power, phase_idx + 1, reactive_power, phase_idx + 1, cos_phi, phase_idx + 1, harmonics)
-
-            offset_l4 = group_l4_offset * group_idx
-            active_power_l4 = _safe_read_f32(active_power_l4_addr + offset_l4)
-            apparent_power_l4 = _safe_read_f32(apparent_power_l4_addr + offset_l4)
-            reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset_l4)
-            cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset_l4)
-            harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset_l4)
-            log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
-                     offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
-            if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
-                log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
-            if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
-                log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as N', group_idx + 1)
-            if(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
-                log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as separate Single-Phase', group_idx + 1)
         
-        # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
-        log.info('Janitza add Basic Groubs')
-        try:
-            for basic_group_num in range(1, 4):  # Basic Groubs 1-3                
-                try:
-                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
-                    self.subdevices.append(subdevice)
-                    log.info(f'Janitza added Basic Groubs {basic_group_num} as subdevice')
-                except Exception as e:
-                    log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
-        except Exception as e:
-            log.info(f'Janitza exception scanning Basic Groubs: {e}')
-        
-        log.info('Janitza UMG 801 device init done')
+        offset_l1_l2_l3 = 100 * (group_idx)
+        if(group_idx == 0):
+            offset_l1_l2_l3 = 0
+        if(group_idx >= 1):
+            offset_l1_l2_l3 = 88 +(100 * (group_idx))
+
+        for phase_idx in range(0, 3):
+            offset_phase = phase_offset * phase_idx
+            active_power = _safe_read_f32(active_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+            apparent_power = _safe_read_f32(apparent_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+            reactive_power = _safe_read_f32(reactive_power_l1_addr + offset_l1_l2_l3 + offset_phase)
+            cos_phi = _safe_read_f32(cos_phi_l1_addr + offset_l1_l2_l3 + offset_phase)
+            harmonics = _safe_read_f32(harmonics_l1_addr + offset_l1_l2_l3 + offset_phase)
+            log.info('Janitza UMG 801 L%d probe Basic Group %d offset %d: activePowerL%d=%s, apparentPowerL%d=%s, reactivePowerL%d=%s, cosPhiL%d=%s, harmonicsL%d=%s',
+                        phase_idx + 1, group_idx + 1, offset_l1_l2_l3 + offset_phase,
+                        phase_idx + 1, active_power, phase_idx + 1, apparent_power, phase_idx + 1, reactive_power, phase_idx + 1, cos_phi, phase_idx + 1, harmonics)
+
+        offset_l4 = group_l4_offset * group_idx
+        active_power_l4 = _safe_read_f32(active_power_l4_addr + offset_l4)
+        apparent_power_l4 = _safe_read_f32(apparent_power_l4_addr + offset_l4)
+        reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset_l4)
+        cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset_l4)
+        harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset_l4)
+        log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
+                    offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
+        if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
+            log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
+        if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
+            log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as N', group_idx + 1)
+        if(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
+            log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as separate Single-Phase', group_idx + 1)
 
     def get_ident(self):
         return f"{self.vendor_id}_{self.info['/Serial']}"
