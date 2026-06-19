@@ -59,7 +59,7 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
                 Reg_u32b(754, '/Serial'),
             ]
         except:
-            log.info('Exception while Janitza Probing')
+            log.error('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
     def phase_regs(self, n):
@@ -78,7 +78,7 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
                 Reg_f32b(828   + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
+            log.error('Janitza register Phase %d exception while Register f32'% n)
         log.info('Janitza register Phase %d done'% n)
         return pRegs
 
@@ -99,7 +99,7 @@ class JANITZA_UMG_96RM(device.EnergyMeter):
                 Reg_f32b(834  , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
-            log.info('Janitza device exception while Register f32')
+            log.error('Janitza device exception while Register f32')
 
 
         for n in range(1, phases + 1):
@@ -133,7 +133,7 @@ class JANITZA_UMG_96S2(device.EnergyMeter):
                 Reg_u32b(911, '/Serial'),
             ]
         except:
-            log.info('Exception while Janitza Probing')
+            log.error('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
     def phase_regs(self, n):
@@ -152,7 +152,7 @@ class JANITZA_UMG_96S2(device.EnergyMeter):
                 Reg_f32b(1012  + s, '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
+            log.error('Janitza register Phase %d exception while Register f32'% n)
         log.info('Janitza register Phase %d done'% n)
         return pRegs
 
@@ -173,7 +173,7 @@ class JANITZA_UMG_96S2(device.EnergyMeter):
                 Reg_f32b(1018 , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
-            log.info('Janitza device exception while Register f32')
+            log.error('Janitza device exception while Register f32')
 
 
         for n in range(1, phases + 1):
@@ -207,7 +207,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
                 Reg_u32b(911, '/Serial'),
             ]
         except:
-            log.info('Exception while Janitza Probing')
+            log.error('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
     def phase_regs(self, n):
@@ -226,7 +226,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
                 Reg_f32b(1294   + s, '/Ac/L%d/PowerFactor' % n,      1, '%.3f'),
             ]
         except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
+            log.error('Janitza register Phase %d exception while Register f32'% n)
         log.info('Janitza register Phase %d done'% n)
         return pRegs
 
@@ -247,7 +247,7 @@ class JANITZA_UMG_96PQ(device.EnergyMeter):
                 Reg_f32b(1300 , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
-            log.info('Janitza device exception while Register f32')
+            log.error('Janitza device exception while Register f32')
 
 
         for n in range(1, phases + 1):
@@ -281,7 +281,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
                 Reg_u32b(911, '/Serial'),
             ]
         except:
-            log.info('Exception while Janitza Probing')
+            log.error('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
     def phase_regs(self, n):
@@ -300,7 +300,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
                 Reg_f32b(1294   + s, '/Ac/L%d/PowerFactor' % n,      1, '%.3f'),
             ]
         except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
+            log.error('Janitza register Phase %d exception while Register f32'% n)
         log.info('Janitza register Phase %d done'% n)
         return pRegs
 
@@ -321,7 +321,7 @@ class JANITZA_UMG_103CBM(device.EnergyMeter):
                 Reg_f32b(1300 , '/Ac/PowerFactor',       1, '%.3f'),
             ]
         except:
-            log.info('Janitza device exception while Register f32')
+            log.error('Janitza device exception while Register f32')
 
 
         for n in range(1, phases + 1):
@@ -372,7 +372,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_u64b(4174, '/Serial'),
             ]
         except Exception as e:
-            log.info(f'Exception while Janitza Probing Basic Group {self.basic_group_num}{l4NameFlag}: {e}')
+            log.error(f'Exception while Janitza Probing Basic Group {self.basic_group_num}{l4NameFlag}: {e}')
         log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num}{l4NameFlag} Probing done')
 
 
@@ -425,7 +425,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_f32b(powerFactorAddress,       '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} exception while Register f32')
+            log.error(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} exception while Register f32')
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} done')
         return pRegs
 
@@ -470,7 +470,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_f32b(energyRevAddress,   '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
             ]
         except:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} device exception while Register f32')
+            log.error(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} device exception while Register f32')
         
         if self.isL4SinglePhase is False:
             phases = 3 
@@ -487,7 +487,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
                 gRegs += self.phase_regs(4)
             except:
-                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while setting PhaseSetting for single-phase L4 mapping')
+                log.error(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while setting PhaseSetting for single-phase L4 mapping')
             
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} adding L4 Current Register for Neutral Measurement')
@@ -501,7 +501,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                     Reg_f32b(nCurrentAddr, '/Ac/N/Current', 1, '%.3f A'),
                 ]
             except:
-                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while Register f32 for L4 Current')
+                log.error(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while Register f32 for L4 Current')
 
         self.data_regs = gRegs
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} device init done')
@@ -552,7 +552,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 Reg_u64b(4174,     '/Serial'),
             ]
         except:
-            log.info('Exception while Janitza Probing')
+            log.error('Exception while Janitza Probing')
         log.info('Janitza Probing done')
 
     def phase_regs(self, n):
@@ -566,7 +566,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 Reg_f32b(19006 + s, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
             ]
         except:
-            log.info('Janitza register Phase %d exception while Register f32'% n)
+            log.error('Janitza register Phase %d exception while Register f32'% n)
         log.info('Janitza register Phase %d done'% n)
         return pRegs
 
@@ -582,7 +582,7 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                 Reg_f32b(19050, '/Ac/Frequency',         1, '%.3f Hz'),
             ]
         except:
-            log.info('Janitza device exception while Register f32')
+            log.error('Janitza device exception while Register f32')
 
 
         for n in range(1, phases + 1):
@@ -623,9 +623,9 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                         log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with unknown or partial L4 support')
                     
                 except Exception as e:
-                    log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
+                    log.error(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
         except Exception as e:
-            log.info(f'Janitza exception scanning Basic Groubs: {e}')
+            log.error(f'Janitza exception scanning Basic Groubs: {e}')
         
         log.info('Janitza UMG 801 device init done')
 
@@ -717,13 +717,13 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                         subdevice.init()
                         log.info(f'Janitza initialized Basic Groub {basic_group_num}')
                 except Exception as e:
-                    log.info(f'Janitza exception adding Basic Groub {basic_group_num}: {e}')
+                    log.error(f'Janitza exception adding Basic Groub {basic_group_num}: {e}')
 
             elif not enabled and subdevice is not None:
                 try:
                     subdevice.destroy()
                 except Exception as e:
-                    log.info(f'Janitza exception destroying Basic Groub {basic_group_num}: {e}')
+                    log.error(f'Janitza exception destroying Basic Groub {basic_group_num}: {e}')
 
                 self.subdevices = [s for s in self.subdevices if s.basic_group_num != basic_group_num]
                 log.info(f'Janitza removed Basic Groub {basic_group_num} as subdevice')
