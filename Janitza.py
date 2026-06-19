@@ -479,7 +479,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         else:
             selectedPhase = self.phaseSetting
             settings = getattr(self, 'settings', None)
-            if settings is not None and 'phasesetting' in settings:
+            if settings is not None:
                 try:
                     selectedPhase = int(settings['phasesetting'])
                 except Exception:
