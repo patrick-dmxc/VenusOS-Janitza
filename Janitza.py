@@ -349,19 +349,20 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     default_role = 'grid'
     default_instance = 41
     position = None
-    isL4MeasureNeutral = True
-    isL4SinglePhase = False
 
 
-    def __init__(self, parent, basic_group_num):
-        super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}')
+    def __init__(self, parent, basic_group_num, isL4MeasureNeutral = False, isL4SinglePhase = False):
+        l4NameFlag = ' L4' if isL4SinglePhase is True else ''
+        super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}{l4NameFlag}')
         self.basic_group_num = basic_group_num
-        self.enabled = True
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} __init__')
-        self.productname = f'Janitza UMG 801 Basic Group {basic_group_num}'
+        self.enabled = True        
+        self.isL4MeasureNeutral = isL4MeasureNeutral
+        self.isL4SinglePhase = isL4SinglePhase
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} __init__')
+        self.productname = f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag}'
         # store a default name separately to avoid inserting a plain string
         # into `self.info` (info entries must be Reg objects)
-        self._default_name = f'Basic Group {basic_group_num}'
+        self._default_name = f'Basic Group {basic_group_num}{l4NameFlag}'
                 
         try:
             self.info_regs = [
@@ -370,16 +371,18 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_u64b(4174, '/Serial'),
             ]
         except Exception as e:
-            log.info(f'Exception while Janitza Probing Basic Group {self.basic_group_num}: {e}')
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} Probing done')
+            log.info(f'Exception while Janitza Probing Basic Group {self.basic_group_num}{l4NameFlag}: {e}')
+        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num}{l4NameFlag} Probing done')
 
 
     def phase_regs(self, n):
         basic_group_num = self.basic_group_num
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n}')
+        l4NameFlag = ' L4' if self.isL4SinglePhase is True else ''
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n}')
         s = 0x0002 * (n - 1)
 
         pRegs = None
+        baseAddress=19000
         voltageAddress=19000 + s
         voltageLineToLineAddress=19006 + s
         currentAddress=19012 + s
@@ -389,17 +392,25 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         powerFactorAddress=19044 + s
         if(basic_group_num > 1):
             baseOffset=(basic_group_num*100) + s
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with offset {baseOffset}')
-            currentAddress=19000 + baseOffset
-            powerAddress=19000 + baseOffset + 8
-            energyFwdAddress=19000 + baseOffset + 46
-            energyRevAddress=19000 + baseOffset + 54
-            powerFactorAddress=19000 + baseOffset + 32
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} with offset {baseOffset}')
+            currentAddress=baseAddress + baseOffset
+            powerAddress=baseAddress + baseOffset + 8
+            energyFwdAddress=baseAddress + baseOffset + 46
+            energyRevAddress=baseAddress + baseOffset + 54
+            powerFactorAddress=baseAddress + baseOffset + 32
+            if self.isL4SinglePhase is True:
+                baseAddress=21500
+                baseOffset=(basic_group_num - 1) * 24
+                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} Phase {n} with offset {baseOffset}')
+                powerAddress=baseAddress + baseOffset
+                energyFwdAddress=baseAddress + baseOffset + 10
+                energyRevAddress=baseAddress + baseOffset + 12
+                powerFactorAddress=baseAddress + baseOffset + 6
         else:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with no offset')           
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} with no offset')           
 
         
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
             pRegs = [
                 Reg_f32b(voltageAddress,           '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
@@ -411,16 +422,16 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_f32b(powerFactorAddress,       '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
             ]
         except:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} exception while Register f32')
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} done')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} exception while Register f32')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} done')
         return pRegs
 
 
     def device_init(self):
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init')
+        l4NameFlag = ' L4' if self.isL4SinglePhase is True else ''
+        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num}{l4NameFlag} device init')
         
         basic_group_num = self.basic_group_num
-        phases = 3
         gRegs = None
 
         powerAddress=19026
@@ -429,16 +440,16 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         energyFwdAddress=19068        
         energyRevAddress=19076
         if(basic_group_num > 1):
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with offset')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} with offset')
             baseOffset=(basic_group_num*100)
             powerAddress=19000 + baseOffset + 14
             currentAddress=19000 + baseOffset + 6
             energyFwdAddress=19000 + baseOffset + 52
             energyRevAddress=19000 + baseOffset + 60
         else:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with no offset')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} with no offset')
             
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
         try:
             gRegs = [
                 Reg_f32b(powerAddress,       '/Ac/Power',             1, '%.3f W'),
@@ -448,29 +459,35 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_f32b(energyRevAddress,   '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
             ]
         except:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device exception while Register f32')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} device exception while Register f32')
         
-        for n in range(1, phases + 1):
-            gRegs += self.phase_regs(n)
+        if self.isL4SinglePhase is False:
+            phases = 3 
+            for n in range(1, phases + 1):
+                gRegs += self.phase_regs(n)
+        else:
+            gRegs += self.phase_regs(4)
             
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} adding L4 Current Register for Neutral Measurement')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} adding L4 Current Register for Neutral Measurement')
             offset=88+(basic_group_num-1)*100
             if(basic_group_num <= 1):
                 offset = 0
             nCurrentAddr=19018 + offset
-            log.info(f'Janitza UMG 801 Basic Group {basic_group_num} L4 Current Register Address {nCurrentAddr}')
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} L4 Current Register Address {nCurrentAddr}')
             try:
                 gRegs += [
                     Reg_f32b(nCurrentAddr, '/Ac/N/Current', 1, '%.3f A'),
                 ]
             except:
-                log.info(f'Janitza UMG 801 Basic Group {basic_group_num} exception while Register f32 for L4 Current')
+                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} exception while Register f32 for L4 Current')
 
         self.data_regs = gRegs
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device init done')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} device init done')
 
     def get_ident(self):
+        if self.isL4SinglePhase is True:
+            return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}_L4SinglePhase"
         return f"{self.parent.get_ident()}_BG{self.basic_group_num:02d}"
 
     def device_update(self):
@@ -479,7 +496,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         super().device_update()
 
     def device_init_late(self):
-        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} device init late')
+        l4NameFlag = ' L4' if self.isL4SinglePhase is True else ''
+        log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num}{l4NameFlag} device init late')
         super().device_init_late()
 
         if self.position is None and self.role in ('pvinverter', 'evcharger', 'heatpump', 'acload', 'genset'):
@@ -555,22 +573,28 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
                     probe_result = self.probe_groups(basic_group_num)
                     
                     # Set L4 configuration based on probe result
-                    #if probe_result['l4_state'] == 'neutral':
-                    subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
-                    subdevice.isL4MeasureNeutral = True
-                    subdevice.isL4SinglePhase = False
-                    log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 Neutral Measurement')
-                    self.subdevices.append(subdevice)
-                    log.info(f'Janitza added Basic Groubs {basic_group_num} as subdevice')
-                    # elif probe_result['l4_state'] == 'separate_single_phase':
-                    #     subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num)
-                    #     subdevice.isL4MeasureNeutral = False
-                    #     subdevice.isL4SinglePhase = False
-                    #     log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 as separate Single-Phase')
-                    # elif probe_result['l4_state'] == 'no_l4_support':
-                    #     subdevice.isL4MeasureNeutral = False
-                    #     subdevice.isL4SinglePhase = False
-                    #     log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured with no L4 support')
+                    if probe_result['l4_state'] == 'neutral':
+                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=True, isL4SinglePhase=False)
+                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for L4 Neutral Measurement')
+                        self.subdevices.append(subdevice)
+                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice')
+                    elif probe_result['l4_state'] == 'separate_single_phase':
+                        subdeviceL1L2L3 = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num , isL4MeasureNeutral=False, isL4SinglePhase=False)
+                        subdeviceL4 =     JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num , isL4MeasureNeutral=False, isL4SinglePhase=True)
+                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured three phase L1-L3 and separate single phase L4 measurement')
+                        self.subdevices.append(subdeviceL1L2L3)
+                        self.subdevices.append(subdeviceL4)
+                        log.info(f'Janitza added Basic Group {basic_group_num} as two subdevices for three phase L1-L3 and separate single phase L4 measurement')
+                    elif probe_result['l4_state'] == 'no_l4_support':
+                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False)
+                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} configured for three phase L1-L3 measurement with no L4 support')
+                        self.subdevices.append(subdevice)
+                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with no L4 support')
+                    else:
+                        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} has unknown or partial L4 support, adding as three phase L1-L3 measurement without L4 support')
+                        subdevice = JANITZA_UMG_801_BASIC_GROUP(self, basic_group_num, isL4MeasureNeutral=False, isL4SinglePhase=False)
+                        self.subdevices.append(subdevice)
+                        log.info(f'Janitza added Basic Group {basic_group_num} as subdevice for three phase L1-L3 measurement with unknown or partial L4 support')
                     
                 except Exception as e:
                     log.info(f'Janitza exception adding Basic Groubs {basic_group_num}: {e}')
