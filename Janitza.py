@@ -456,8 +456,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} adding L4 Current Register for Neutral Measurement')
             offset=88+(basic_group_num-1)*100
-            if(basic_group_num ==0):
-                offset=0
+            if(basic_group_num <= 1):
+                offset = 0
             nCurrentAddr=19018 + offset
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} L4 Current Register Address {nCurrentAddr}')
             try:
@@ -625,8 +625,8 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         reactive_power_l4 = _safe_read_f32(reactive_power_l4_addr + offset_l4)
         cos_phi_l4 = _safe_read_f32(cos_phi_l4_addr + offset_l4)
         harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset_l4)
-        log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
-                    offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
+        log.info('Janitza UMG 801 L4 probe Basic Group %d offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
+                    group_idx + 1, offset_l4, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
         if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
             log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
             l4_state = 'no_l4_support'
