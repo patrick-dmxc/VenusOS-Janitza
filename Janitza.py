@@ -663,6 +663,8 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         else:
             l4_state = 'partial_or_unknown'
 
+        log.info('Janitza UMG 801 Basic Group %d probe result: L4 State: %s', group_idx + 1, l4_state)
+
         return {
             'group_num': group_num,
             'l4_state': l4_state,
