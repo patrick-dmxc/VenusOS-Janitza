@@ -351,13 +351,14 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     position = None
 
 
-    def __init__(self, parent, basic_group_num, isL4MeasureNeutral = False, isL4SinglePhase = False):
+    def __init__(self, parent, basic_group_num, isL4MeasureNeutral = False, isL4SinglePhase = False, phaseSetting = None):
         l4NameFlag = ' L4' if isL4SinglePhase is True else ''
         super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}{l4NameFlag}')
         self.basic_group_num = basic_group_num
         self.enabled = True        
         self.isL4MeasureNeutral = isL4MeasureNeutral
         self.isL4SinglePhase = isL4SinglePhase
+        self.phaseSetting = phaseSetting if phaseSetting in (1, 2, 3) else min(max(basic_group_num, 1), 3)
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} __init__')
         self.productname = f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag}'
         # store a default name separately to avoid inserting a plain string
@@ -409,6 +410,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             energyFwdAddress=baseAddress + baseOffset + 10
             energyRevAddress=baseAddress + baseOffset + 12
             powerFactorAddress=baseAddress + baseOffset + 6
+            n = self.phaseSetting
+            
         
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
@@ -474,6 +477,13 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             for n in range(1, phases + 1):
                 gRegs += self.phase_regs(n)
         else:
+            selectedPhase = self.phaseSetting
+            if 'phasesetting' in self.settings:
+                selectedPhase = int(self.settings['phasesetting'])
+            if selectedPhase not in (1, 2, 3):
+                selectedPhase = 1
+            self.phaseSetting = selectedPhase
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} using PhaseSetting {selectedPhase} for single-phase L4 mapping')
             gRegs += self.phase_regs(4)
             
         if self.isL4MeasureNeutral is True and self.isL4SinglePhase is False:
@@ -512,6 +522,11 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             if 'position' not in self.dbus_settings:
                 self.add_settings({'position': ['/Position', 0, 0, 2]})
                 self.add_dbus_setting('position', '/Position')
+        
+        if self.isL4SinglePhase is True:            
+            if 'phasesetting' not in self.dbus_settings:
+                self.add_settings({'phasesetting': ['/PhaseSetting', self.phaseSetting, 1, 3]})
+                self.add_dbus_setting('phasesetting', '/PhaseSetting')
 
 class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     vendor_id = 'ja'
