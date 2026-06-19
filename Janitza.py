@@ -534,32 +534,17 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             self.add_dbus_setting('phasesetting', '/PhaseSetting')
 
     def setting_changed(self, name, old, new):
-        if super().setting_changed(name, old, new):
-            return True
-        
-        if name == 'phasesetting' and self.isL4SinglePhase is True:
+        if name == 'phasesetting' and self.isL4SinglePhase:
             try:
                 phase = int(new)
             except Exception:
                 phase = 1
-
             if phase not in (1, 2, 3):
                 phase = 1
-
-            if phase != new:
-                self.settings['phasesetting'] = phase
-
             self.phaseSetting = phase
             log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 PhaseSetting changed from {old} to {phase}')
 
-            if self.isL4SinglePhase:
-                # Rebuild data regs in-place so UI changes apply immediately.
-                self.device_init()
-                self.init_data_regs()
-
-            return True
-
-        return False
+        return super().setting_changed(name, old, new)
 
 class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
     vendor_id = 'ja'
