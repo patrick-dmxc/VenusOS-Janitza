@@ -533,21 +533,6 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             self.add_settings({'phasesetting': ['/PhaseSetting', self.phaseSetting, 1, 3]})
             self.add_dbus_setting('phasesetting', '/PhaseSetting')
 
-        if self.isL4SinglePhase is True and 'phasesetting' in self.settings:
-            try:
-                phase = int(self.settings['phasesetting'])
-            except Exception:
-                phase = self.phaseSetting
-
-            if phase not in (1, 2, 3):
-                phase = 1
-
-            # Apply persisted phase setting after settings are available.
-            if phase != self.phaseSetting:
-                self.phaseSetting = phase
-                self.device_init()
-                self.init_data_regs()
-
     def setting_changed(self, name, old, new):
         if super().setting_changed(name, old, new):
             return True
