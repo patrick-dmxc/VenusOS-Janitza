@@ -543,6 +543,8 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 phase = 1
             self.phaseSetting = phase
             log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 PhaseSetting changed from {old} to {phase}')
+            self.device_init()
+            self.init_data_regs()
 
         return super().setting_changed(name, old, new)
 
