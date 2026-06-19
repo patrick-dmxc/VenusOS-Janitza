@@ -548,11 +548,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             try:
                 old_phase = int(old)
                 if old_phase in (1, 2, 3) and old_phase != phase:
-                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleting /Ac/L{old_phase} from dbus')
-                    self.dbus.del_tree(f'/Ac/L1')
-                    self.dbus.del_tree(f'/Ac/L2')
-                    self.dbus.del_tree(f'/Ac/L3')
-                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleted /Ac/L{old_phase} from dbus')
+                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleting /Ac/Lx from dbus')
+                    self.dbus.del_tree(f'/Ac')
+                    log.info(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 deleted /Ac/Lx from dbus')
             except Exception as e:
                 log.error(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 exception deleting old phase paths: {e}')
             self.device_init()
