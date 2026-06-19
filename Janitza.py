@@ -382,7 +382,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         voltageLineToLineAddress=19006 + s
         currentAddress=19012 + s
         powerAddress=19020 + s
-        energyFwdAddress=19054 + s
+        energyFwdAddress=19062 + s
         energyRevAddress=19070 + s
         powerFactorAddress=19044 + s
         if(basic_group_num > 1):
@@ -390,7 +390,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} register Phase {n} with offset {baseOffset}')
             currentAddress=19000 + baseOffset
             powerAddress=19000 + baseOffset + 8
-            energyFwdAddress=19000 + baseOffset + 38
+            energyFwdAddress=19000 + baseOffset + 46
             energyRevAddress=19000 + baseOffset + 54
             powerFactorAddress=19000 + baseOffset + 32
         else:
@@ -425,26 +425,26 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         powerAddress=19026
         currentAddress=19018
         frequencyAddress=19050
-        energyFwdAddress=19060        
-        powerFactorAddress=19076
+        energyFwdAddress=19068        
+        energyRevAddress=19076
         if(basic_group_num > 1):
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with offset')
             baseOffset=(basic_group_num*100)
             powerAddress=19000 + baseOffset + 14
             currentAddress=19000 + baseOffset + 6
-            energyFwdAddress=19000 + baseOffset + 44
-            powerFactorAddress=19000 + baseOffset + 60
+            energyFwdAddress=19000 + baseOffset + 52
+            energyRevAddress=19000 + baseOffset + 60
         else:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} with no offset')
             
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nPowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
         try:
             gRegs = [
                 Reg_f32b(powerAddress,       '/Ac/Power',             1, '%.3f W'),
                 Reg_f32b(currentAddress,     '/Ac/Current',           1, '%.3f A'),
                 Reg_f32b(frequencyAddress,   '/Ac/Frequency',         1, '%.3f Hz'),
                 Reg_f32b(energyFwdAddress,   '/Ac/Energy/Forward', 1000, '%.3f kWh'),
-                Reg_f32b(powerFactorAddress, '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
+                Reg_f32b(energyRevAddress,   '/Ac/Energy/Reverse', 1000, '%.3f kWh'),
             ]
         except:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} device exception while Register f32')
