@@ -398,17 +398,17 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             energyFwdAddress=baseAddress + baseOffset + 46
             energyRevAddress=baseAddress + baseOffset + 54
             powerFactorAddress=baseAddress + baseOffset + 32
-            if self.isL4SinglePhase is True:
-                baseAddress=21500
-                baseOffset=(basic_group_num - 1) * 24
-                log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} Phase {n} with offset {baseOffset}')
-                powerAddress=baseAddress + baseOffset
-                energyFwdAddress=baseAddress + baseOffset + 10
-                energyRevAddress=baseAddress + baseOffset + 12
-                powerFactorAddress=baseAddress + baseOffset + 6
         else:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} with no offset')           
 
+        if self.isL4SinglePhase is True:
+            baseAddress=21500
+            baseOffset=(basic_group_num - 1) * 24
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} Phase {n} with offset {baseOffset}')
+            powerAddress=baseAddress + baseOffset
+            energyFwdAddress=baseAddress + baseOffset + 10
+            energyRevAddress=baseAddress + baseOffset + 12
+            powerFactorAddress=baseAddress + baseOffset + 6
         
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
@@ -448,6 +448,14 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             energyRevAddress=19000 + baseOffset + 60
         else:
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} with no offset')
+
+        if self.isL4SinglePhase is True:
+            baseAddress=21500
+            baseOffset=(basic_group_num - 1) * 24
+            log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} with offset {baseOffset}')
+            powerAddress=baseAddress + baseOffset
+            energyFwdAddress=baseAddress + baseOffset + 10
+            energyRevAddress=baseAddress + baseOffset + 12
             
         log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
         try:
@@ -654,10 +662,10 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
             log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
             l4_state = 'no_l4_support'
-        if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
+        elif(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
             log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as N', group_idx + 1)
             l4_state = 'neutral'
-        if(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
+        elif(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
             log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as separate Single-Phase', group_idx + 1)
             l4_state = 'separate_single_phase'
         else:
