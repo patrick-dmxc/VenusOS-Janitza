@@ -458,7 +458,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             offset=88+(basic_group_num-1)*100
             if(basic_group_num ==0):
                 offset=0
-            nCurrentAddr=19044 + offset
+            nCurrentAddr=19018 + offset
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num} L4 Current Register Address {nCurrentAddr}')
             try:
                 gRegs += [
