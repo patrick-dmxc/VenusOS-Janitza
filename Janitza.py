@@ -531,10 +531,19 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
 
         log.info('Janitza set Registers')
         self.data_regs = gRegs
-        
-        G1L4W = self.read_register(Reg_f32b(19026))
-        G2L4W = self.read_register(Reg_f32b(21524))
-        log.info(f'Janitza UMG 801 device init - check for 4th line with register {G1L4W} and {G2L4W}')
+
+        def _safe_read_f32(addr):
+            reg = Reg_f32b(addr)
+            rr = self.read_modbus(reg.base, reg.count, reg.access)
+            if rr.isError():
+                return None
+            reg.decode(rr.registers)
+            return reg.value
+
+        g1_l4_w = _safe_read_f32(21500)
+        g2_l4_w = _safe_read_f32(21524)
+        log.info('Janitza UMG 801 device init - check for 4th line with register 21500=%s and 21524=%s',
+                 g1_l4_w, g2_l4_w)
         
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
