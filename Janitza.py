@@ -557,6 +557,12 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
             harmonics_l4 = _safe_read_f32(harmonics_l4_addr + offset)
             log.info('Janitza UMG 801 L4 probe offset %d: activePowerL4=%s, apparentPowerL4=%s, reactivePowerL4=%s, cosPhiL4=%s, harmonicsL4=%s',
                      offset, active_power_l4, apparent_power_l4, reactive_power_l4, cos_phi_l4, harmonics_l4)
+            if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is None):
+                log.info('Janitza UMG 801 Basic Group %d seems to have no L4 support', group_idx + 1)
+            if(active_power_l4 is None and apparent_power_l4 is None and reactive_power_l4 is None and cos_phi_l4 is None and harmonics_l4 is not None):
+                log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as N', group_idx + 1)
+            if(active_power_l4 is not  None and apparent_power_l4 is not  None and reactive_power_l4 is not  None and cos_phi_l4 is not None and harmonics_l4 is not None):
+                log.info('Janitza UMG 801 Basic Group %d seems to have L4 setup as separate Single-Phase', group_idx + 1)
         
         # Create SubDevices for each Basic Groub (enabled status set in device_init_late)
         log.info('Janitza add Basic Groubs')
