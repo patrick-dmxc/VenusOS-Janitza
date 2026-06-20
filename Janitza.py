@@ -409,6 +409,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             baseOffset=(basic_group_num - 1) * 24
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} Phase {n} with offset {baseOffset}')
             powerAddress=baseAddress + baseOffset
+            currentAddress=currentAddress + ((4-n)*2)
             energyFwdAddress=baseAddress + baseOffset + 10
             energyRevAddress=baseAddress + baseOffset + 12
             powerFactorAddress=baseAddress + baseOffset + 6
@@ -554,6 +555,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 log.error(f'Janitza UMG 801 Basic Group {self.basic_group_num} L4 exception deleting /Ac: {e}')
             self.device_init()
             self.init_data_regs()
+            self.dbus.flush()
 
         return super().setting_changed(name, old, new)
 
