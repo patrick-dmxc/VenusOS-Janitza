@@ -389,7 +389,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         voltageAddress=19000 + s
         voltageLineToLineAddress=19006 + s
         currentAddress=19012 + s
-        powerAddress=19020 + s
+        activePowerAddress=19020 + s
+        apparentPowerAddress=19028 + s
+        reactivePowerAddress=19036 + s
         energyFwdAddress=19062 + s
         energyRevAddress=19070 + s
         powerFactorAddress=19044 + s
@@ -397,7 +399,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             baseOffset=(basic_group_num*100) + s
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register Phase {n} with offset {baseOffset}')
             currentAddress=baseAddress + baseOffset
-            powerAddress=baseAddress + baseOffset + 8
+            activePowerAddress=baseAddress + baseOffset + 8
+            apparentPowerAddress=baseAddress + baseOffset + 16
+            reactivePowerAddress=baseAddress + baseOffset + 24
             energyFwdAddress=baseAddress + baseOffset + 46
             energyRevAddress=baseAddress + baseOffset + 54
             powerFactorAddress=baseAddress + baseOffset + 32
@@ -408,20 +412,22 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             baseAddress=21500
             baseOffset=(basic_group_num - 1) * 24
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} Phase {n} with offset {baseOffset}')
-            powerAddress=baseAddress + baseOffset
+            activePowerAddress=baseAddress + baseOffset
             currentAddress=currentAddress + ((4-n)*2)
             energyFwdAddress=baseAddress + baseOffset + 10
             energyRevAddress=baseAddress + baseOffset + 12
             powerFactorAddress=baseAddress + baseOffset + 6
             
         
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nPower {powerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Phase {n} Addresses:\nVoltage {voltageAddress}\nVoltageLineToLine {voltageLineToLineAddress}\nCurrent {currentAddress}\nActivePower {activePowerAddress}\nApparentPower {apparentPowerAddress}\nReactivePower {reactivePowerAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}\nPowerFactor {powerFactorAddress}')
         try:
             pRegs = [
                 Reg_f32b(voltageAddress,           '/Ac/L%d/Voltage' % n,           1, '%.3f V'),
                 Reg_f32b(voltageLineToLineAddress, '/Ac/L%d/VoltageLineToLine' % n, 1, '%.3f V'),
                 Reg_f32b(currentAddress,           '/Ac/L%d/Current' % n,           1, '%.3f A'),
-                Reg_f32b(powerAddress,             '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(activePowerAddress,       '/Ac/L%d/Power' % n,             1, '%.3f W'),
+                Reg_f32b(apparentPowerAddress,     '/Ac/L%d/ApparentPower' % n,     1, '%.3f VA'),
+                Reg_f32b(reactivePowerAddress,     '/Ac/L%d/ReactivePower' % n,     1, '%.3f var'),
                 Reg_f32b(energyFwdAddress,         '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
                 Reg_f32b(energyRevAddress,         '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
                 Reg_f32b(powerFactorAddress,       '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
@@ -439,7 +445,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         basic_group_num = self.basic_group_num
         gRegs = None
 
-        powerAddress=19026
+        activePowerAddress=19026
+        apparentPowerAddress=19034
+        reactivePowerAddress=19042
         currentAddress=19018
         frequencyAddress=19050
         energyFwdAddress=19068        
@@ -447,7 +455,9 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         if(basic_group_num > 1):
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} with offset')
             baseOffset=(basic_group_num*100)
-            powerAddress=19000 + baseOffset + 14
+            activePowerAddress=19000 + baseOffset + 14
+            apparentPowerAddress=19000 + baseOffset + 22
+            reactivePowerAddress=19000 + baseOffset + 30
             currentAddress=19000 + baseOffset + 6
             energyFwdAddress=19000 + baseOffset + 52
             energyRevAddress=19000 + baseOffset + 60
@@ -458,14 +468,18 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
             baseAddress=21500
             baseOffset=(basic_group_num - 1) * 24
             log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} register on BaseAddress {baseAddress} with offset {baseOffset}')
-            powerAddress=baseAddress + baseOffset
+            activePowerAddress=baseAddress + baseOffset
+            apparentPowerAddress=baseAddress + baseOffset + 8
+            reactivePowerAddress=baseAddress + baseOffset + 16
             energyFwdAddress=baseAddress + baseOffset + 10
             energyRevAddress=baseAddress + baseOffset + 12
             
-        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Addresses:\nPower {powerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
+        log.info(f'Janitza UMG 801 Basic Group {basic_group_num}{l4NameFlag} Addresses:\nActivePower {activePowerAddress}\nApparentPower {apparentPowerAddress}\nReactivePower {reactivePowerAddress}\nCurrent {currentAddress}\nEnergyFwd {energyFwdAddress}\nEnergyRev {energyRevAddress}')
         try:
             gRegs = [
-                Reg_f32b(powerAddress,       '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(activePowerAddress, '/Ac/Power',             1, '%.3f W'),
+                Reg_f32b(apparentPowerAddress, '/Ac/ApparentPower',   1, '%.3f VA'),
+                Reg_f32b(reactivePowerAddress, '/Ac/ReactivePower',   1, '%.3f var'),
                 Reg_f32b(currentAddress,     '/Ac/Current',           1, '%.3f A'),
                 Reg_f32b(frequencyAddress,   '/Ac/Frequency',         1, '%.3f Hz'),
                 Reg_f32b(energyFwdAddress,   '/Ac/Energy/Forward', 1000, '%.3f kWh'),
