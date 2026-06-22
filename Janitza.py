@@ -788,17 +788,20 @@ class JANITZA_UMG_801(device.CustomName, device.EnergyMeter):
         return result
 
     def device_init_late(self):
-        super().device_init_late()
-        log.info(f'Janitza UMG 801 device init late')
+        try:
+            log.info(f'Janitza UMG 801 device init late')
+            super().device_init_late()
 
-        for subdevice in self.subdevices:
-            setting_name = self._subdevice_setting_key(subdevice)
-            setting_path = self._subdevice_setting_path(subdevice)
-            if setting_name not in self.dbus_settings:
-                self.add_settings({setting_name: [setting_path, 1, 0, 1]})
-                self.add_dbus_setting(setting_name, setting_path)
+            for subdevice in self.subdevices:
+                setting_name = self._subdevice_setting_key(subdevice)
+                setting_path = self._subdevice_setting_path(subdevice)
+                if setting_name not in self.dbus_settings:
+                    self.add_settings({setting_name: [setting_path, 1, 0, 1]})
+                    self.add_dbus_setting(setting_name, setting_path)
 
-        self.update_basic_group_subdevices()
+            self.update_basic_group_subdevices()
+        except Exception as e:
+            log.error(f'Janitza UMG 801 device init late exception: {e}')
 
 models96RM = {
     5222036: {
