@@ -345,7 +345,6 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
     role_names = ['grid', 'pvinverter', 'genset', 'acload', 'evcharger',
                   'heatpump']
     allowed_roles = role_names
-    default_role = 'grid'
     default_instance = 41
     position = None
 
@@ -354,6 +353,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
         l4NameFlag = ' L4' if isL4SinglePhase is True else ''
         super(JANITZA_UMG_801_BASIC_GROUP, self).__init__(parent, f'Basic Group{basic_group_num:02d}{l4NameFlag}')        
         nr_phases = 3 if isL4SinglePhase is False else 1
+        default_role = 'grid' if basic_group_num is 1 else 'acload'
         self.basic_group_num = basic_group_num
         self.enabled = True        
         self.isL4MeasureNeutral = isL4MeasureNeutral
