@@ -428,7 +428,7 @@ class JANITZA_UMG_801_BASIC_GROUP(device.CustomName, device.SubDevice):
                 Reg_f32b(currentAddress,           '/Ac/L%d/Current' % n,           1, '%.3f A'),
                 Reg_f32b(activePowerAddress,       '/Ac/L%d/Power' % n,             1, '%.3f W'),
                 # Reg_f32b(apparentPowerAddress,     '/Ac/L%d/ApparentPower' % n,     1, '%.3f VA'),
-                # Reg_f32b(reactivePowerAddress,     '/Ac/L%d/ReactivePower' % n,     1, '%.3f var'),
+                Reg_f32b(reactivePowerAddress,     '/Ac/L%d/ReactivePower' % n,     1, '%.3f var'),
                 Reg_f32b(energyFwdAddress,         '/Ac/L%d/Energy/Forward' % n, 1000, '%.3f kWh'),
                 Reg_f32b(energyRevAddress,         '/Ac/L%d/Energy/Reverse' % n, 1000, '%.3f kWh'),
                 Reg_f32b(powerFactorAddress,       '/Ac/L%d/PowerFactor' % n,       1, '%.3f'),
