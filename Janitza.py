@@ -412,6 +412,10 @@ models96RM = {
         'model':    'UMG 96 RM-E-RCM',
         'handler':  JANITZA_UMG_96RM,
     },
+    5222038: {
+        'model':    'UMG 96 RM-CBM',
+        'handler':  JANITZA_UMG_96RM,
+    },
     5222061: {
         'model':    'UMG 96 RM',
         'handler':  JANITZA_UMG_96RM,
